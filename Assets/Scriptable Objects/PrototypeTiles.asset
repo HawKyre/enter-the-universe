@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2880f41686a6054a9b89d4707ba615c, type: 3}
+  m_Name: PrototypeTiles
+  m_EditorClassIdentifier: 
+  groundRuleTile: {fileID: 11400000, guid: ca02be713aa8b45458da34d71232c4c8, type: 2}
+  boundsRuleTile: {fileID: 11400000, guid: f753925034e24b74a9297a5211a25ff7, type: 2}
+  treeTile: {fileID: 11400000, guid: 06fe08ffe4d5f3e489554a95b95b7320, type: 2}
