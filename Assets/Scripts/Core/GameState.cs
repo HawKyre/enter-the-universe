@@ -7,25 +7,25 @@ public class GameState : MonoBehaviour
     // Singleton instance
     private static GameState Instance;
 
-    [SerializeField] private ItemDictionary itemDictionary;
-    [SerializeField] private EntityDictionary entityDictionary;
+    // [SerializeField] private ItemDictionary itemDictionary;
+    // [SerializeField] private EntityDictionary entityDictionary;
     [SerializeField] private MapObject mapObject;
     [SerializeField] private Inventory playerInventory;
     
     [SerializeField] private GameObject defaultEntity;
-    [SerializeField] private GameObject defaultItem;
+    [SerializeField] private GameObject defaultCollectable;
 
     private Transform breakableEntityParent;
     private Transform staticEntityParent;
     private new ParticleSystem particleSystem;
     private UIState currentUIState;
 
-    public ItemDictionary _ItemDictionary { get => itemDictionary; private set => itemDictionary = value; }
-    public EntityDictionary _EntityDictionary { get => entityDictionary; private set => entityDictionary = value; }
+    // public ItemDictionary _ItemDictionary { get => itemDictionary; private set => itemDictionary = value; }
+    // public EntityDictionary _EntityDictionary { get => entityDictionary; private set => entityDictionary = value; }
     public GameObject _DefaultEntity { get => defaultEntity; private set => defaultEntity = value; }
     public Transform _BreakableEntityParent { get => breakableEntityParent; private set => breakableEntityParent = value; }
     public Transform _StaticEntityParent { get => staticEntityParent; private set => staticEntityParent = value; }
-    public GameObject _DefaultItem { get => defaultItem; private set => defaultItem = value; }
+    public GameObject _DefaultCollectable { get => defaultCollectable; private set => defaultCollectable = value; }
     public MapObject _MapObject { get => mapObject; private set => mapObject = value; }
     public Inventory _PlayerInventory { get => playerInventory; private set => playerInventory = value; }
     public ParticleSystem _ParticleSystem { get => particleSystem; private set => particleSystem = value; }
@@ -33,14 +33,18 @@ public class GameState : MonoBehaviour
 
     private void Awake()
     {
+        AssetLoader.LoadGameData();
+
         Instance = this.gameObject.GetComponent<GameState>();
-        _ItemDictionary.LoadDictionary_v0();
-        _EntityDictionary.LoadDictionary_v0();
+        // _ItemDictionary.LoadDictionary_v0();
+        // _EntityDictionary.LoadDictionary_v0();
 
         _BreakableEntityParent = GameObject.Find("/Game Entities/Breakable").transform;
         _StaticEntityParent = GameObject.Find("/Game Entities/Static").transform;
 
         _ParticleSystem = GameObject.Find("Particle System").GetComponent<ParticleSystem>();
+
+        print("FINISHED LOADING");
     }
 
     public static GameState GetInstance()

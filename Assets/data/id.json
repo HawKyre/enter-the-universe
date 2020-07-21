@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1",
+    "name": "prototype_tree",
+    "type": "BREAKABLE",
+    "drop": "2:c1,3;3:2&%0.2",
+    "hp": "5",
+    "min_power": "0"
+  },
+  {
+    "id": "2",
+    "name": "prototype_stick",
+    "type": "ITEM"
+  },
+  {
+    "id": "3",
+    "name": "prototype_wood",
+    "type": "ITEM"
+  }
+]

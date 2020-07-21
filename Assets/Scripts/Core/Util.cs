@@ -1,3 +1,5 @@
+using System;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 public static class Util
@@ -19,5 +21,16 @@ public static class Util
     public static Vector3Int ToVector3Int(Vector2 v)
     {
         return new Vector3Int((int) v.x, (int) v.y, 0);
+    }
+
+    public static string SnakeToCamel(string name)
+    {
+        MatchEvaluator me = new MatchEvaluator((m) => UpperCaseMatch(m));
+        return Regex.Replace(name, @"_([a-z])", me);
+    }
+
+    private static string UpperCaseMatch(Match m)
+    {
+        return (char) (m.Value[1] - 32) + "";
     }
 }

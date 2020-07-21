@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class ZoneMap
 {
-    public IEntity[][] mapEntities;
-    public List<IGameItem> mapItems;
+    public GameObject[][] mapEntities;
+    public List<CollectableEntity> mapItems;
 
     private static ZoneMap Instance;
 
@@ -16,16 +16,16 @@ public class ZoneMap
 
     public ZoneMap(int width, int height)
     {
-        mapEntities = new IEntity[width][];
+        mapEntities = new GameObject[width][];
         for (int i = 0; i < width; i++)
         {
-            mapEntities[i] = new IEntity[height];
+            mapEntities[i] = new GameObject[height];
         }
 
-        mapItems = new List<IGameItem>();
+        mapItems = new List<CollectableEntity>();
     }
 
-    public void AddEntity(Vector2Int pos, IEntity e)
+    public void AddEntity(Vector2Int pos, GameObject e)
     {
         // TODO - CHECK
         // Overrides the current block
@@ -34,15 +34,16 @@ public class ZoneMap
 
     public void DestroyEntity(Vector2Int pos)
     {
-        if (mapEntities[pos.x][pos.y] is BreakableEntity)
+        var g = mapEntities[pos.x][pos.y];
+        if (g != null)
         {
-            BreakableEntity b = mapEntities[pos.x][pos.y] as BreakableEntity;
-            b.Break();
+            var be = g.GetComponent<BreakableEntity>();
+            be.Break();
             mapEntities[pos.x][pos.y] = null;
         }
     }
 
-    public void AddItem(IGameItem i)
+    public void AddItem(CollectableEntity i)
     {
         mapItems.Add(i);
     }

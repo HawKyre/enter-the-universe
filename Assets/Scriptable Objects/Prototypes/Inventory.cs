@@ -11,7 +11,7 @@ public class Inventory : ScriptableObject
     {
         if (inventory == null)
         {
-            inventory = new List<ItemStack>();
+            inventory = new List<ItemStack>(50);
         }
     }
 

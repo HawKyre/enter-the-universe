@@ -303,7 +303,9 @@ public class PrototypeTerrainGenerator : MonoBehaviour, ITerrainGenerator
                     if (lr.NextDouble() > relativeMHD * 2)
                     {
                         treeGrid[y][x] = true;
-                        BreakableEntity treeEntity = new BreakableEntity(1, tilePos);
+                        
+                        GameObject treeEntity = GameEntity.GenerateGameEntity(1, tilePos);
+                        treeEntity.AddComponent<BreakableEntity>();
 
                         // treeEntity.EntityObject.transform.position = tilePos;
 

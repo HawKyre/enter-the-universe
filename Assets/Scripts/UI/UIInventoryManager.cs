@@ -45,12 +45,11 @@ public class UIInventoryManager : MonoBehaviour
 
             var rect = itemInstance.GetComponent<RectTransform>();
             Vector3 itemPos = new Vector3(row * (UI_ITEM_SIZE + GAP), column * (UI_ITEM_SIZE + GAP), 0);
-            print(itemPos);
             rect.anchoredPosition3D = itemPos;
             rect.localScale = Vector3.one;
 
             Image itemImage = itemInstance.transform.GetChild(0).GetComponent<Image>();
-            itemImage.sprite = GameState.GetInstance()._ItemDictionary.iDict[item.ID].itemSprite;
+            itemImage.sprite = AssetLoader.GetData(item.ID).sprite;
 
             TextMeshProUGUI itemText = itemInstance.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>();
             itemText.text = "x" + item.Count;

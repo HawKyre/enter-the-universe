@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class ItemStack : IGameItem
+public class ItemStack
 {
     private int _id;
     private int _count;
