@@ -13,30 +13,30 @@ public class UIStateManager : MonoBehaviour
     {
         switch (GameState.GetInstance()._CurrentUIState)
         {
-            case UIState.GAME:
+            case UIIngameState.GAME:
                 if (Input.GetKeyDown(KeyCode.E))
                 {
-                    GameState.GetInstance()._CurrentUIState = UIState.INVENTORY;
+                    GameState.GetInstance()._CurrentUIState = UIIngameState.INVENTORY;
                     inventoryManager.RefreshInventory();
                     InventoryUI.SetActive(true);
                 }
                 else if (Input.GetKeyDown(KeyCode.Escape))
                 {
-                    GameState.GetInstance()._CurrentUIState = UIState.PAUSE;
+                    GameState.GetInstance()._CurrentUIState = UIIngameState.PAUSE;
                     PauseUI.SetActive(true);
                 }
                 break;
-            case UIState.INVENTORY:
+            case UIIngameState.INVENTORY:
                 if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Escape))
                 {
-                    GameState.GetInstance()._CurrentUIState = UIState.GAME;
+                    GameState.GetInstance()._CurrentUIState = UIIngameState.GAME;
                     InventoryUI.SetActive(false);
                 }
                 break;
-            case UIState.PAUSE:
+            case UIIngameState.PAUSE:
                 if (Input.GetKeyDown(KeyCode.Escape))
                 {
-                    GameState.GetInstance()._CurrentUIState = UIState.GAME;
+                    GameState.GetInstance()._CurrentUIState = UIIngameState.GAME;
                     PauseUI.SetActive(false);
                 }
                 break;
@@ -45,7 +45,7 @@ public class UIStateManager : MonoBehaviour
 
 }
 
-public enum UIState
+public enum UIIngameState
 {
     GAME,
     PAUSE,

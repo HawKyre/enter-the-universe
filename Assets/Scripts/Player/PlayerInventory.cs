@@ -6,8 +6,9 @@ public class PlayerInventory : MonoBehaviour
 {
     [SerializeField] private Inventory playerInventory;
     
-    private void Start() {
-        playerInventory.LoadInventory();
+    private void Start()
+    {
+        playerInventory = new Inventory();
     }
 
     private void Update() {

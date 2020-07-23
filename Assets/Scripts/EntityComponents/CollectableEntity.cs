@@ -45,14 +45,18 @@ public class CollectableEntity : MonoBehaviour
     {
         Transform t = this.transform;
 
+        float forceMult = 1;
+
         while (Vector2.Distance(playerT.position, t.position) > 0.5f)
         {
-            rb2d.AddForce((playerT.position - t.position) * 20);
+            rb2d.AddForce((playerT.position - t.position) * 20 * forceMult);
+            forceMult *= 1.02f;
             yield return null;
         }
 
         // Add it after you collect it
-        GameState.GetInstance()._PlayerInventory.AddItem(itemStack);
+        Debug.Log("YTou collecied " + itemStack.Count);
+        GameState.GetInstance()._PlayerState.playerInventory.AddItem(itemStack);
 
         GameObject.Destroy(this.gameObject);
     }

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -24,9 +25,10 @@ public class GameSceneSetup : MonoBehaviour
         cameraConfiner.SetPath(0, new List<Vector2>(points));
     }
 
-    public void MovePlayerToSpawnPos(System.Random random, int h, int w, Tilemap boundsTilemap)
+    // This shouldn't be here but in GameState
+    private void MovePlayerToSpawnPos(int h, int w, Tilemap boundsTilemap)
     {
-        System.Random _r = new System.Random(random.Next());
+        System.Random _r = new System.Random((int) DateTimeOffset.Now.ToUnixTimeMilliseconds());
 
         bool validSpawn = false;
         Vector3 spawnPos = new Vector3();

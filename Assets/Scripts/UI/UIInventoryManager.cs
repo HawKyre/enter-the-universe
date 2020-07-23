@@ -33,9 +33,9 @@ public class UIInventoryManager : MonoBehaviour
         int column = 0;
 
         // Sort inventory by ID before showing it?
-        GameState.GetInstance()._PlayerInventory.inventory.Sort((x, y) => x.ID - y.ID);
+        GameState.GetInstance()._PlayerState.playerInventory.SortInventory((x, y) => x.ID - y.ID);
 
-        foreach (ItemStack item in GameState.GetInstance()._PlayerInventory.inventory)
+        foreach (ItemStack item in GameState.GetInstance()._PlayerState.playerInventory.GetItems())
         {
             print($"Found item {item.ID} x{item.Count} in inventory");
             GameObject itemInstance = GameObject.Instantiate(itemPrefab);

@@ -1,18 +1,16 @@
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Inventory", menuName = "Enter The Dimension/Inventory", order = 0)]
-public class Inventory : ScriptableObject
+public class Inventory
 {
-    public List<ItemStack> inventory;
+    private const int MAX_INVENTORY_SIZE = 50;
+    private List<ItemStack> inventory;
 
-    public void LoadInventory()
+    public Inventory()
     {
-        if (inventory == null)
-        {
-            inventory = new List<ItemStack>(50);
-        }
+        inventory = new List<ItemStack>(MAX_INVENTORY_SIZE);
     }
 
     public void AddItem(ItemStack i)
@@ -32,5 +30,15 @@ public class Inventory : ScriptableObject
             // Debug.Log("Adding item with ID " + i.ID);
             inventory.Add(i);
         }
+    }
+
+    public void SortInventory(Comparison<ItemStack> p)
+    {
+        inventory.Sort(p);
+    }
+
+    public List<ItemStack> GetItems()
+    {
+        return inventory;
     }
 }

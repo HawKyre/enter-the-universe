@@ -17,10 +17,14 @@ public class PlayerMovement : MonoBehaviour
     // Because there's physics involved
     void FixedUpdate()
     {
-        if (GameState.GetInstance()._CurrentUIState == UIState.GAME)
+        if (GameState.GetInstance()._CurrentUIState == UIIngameState.GAME)
         {
             var deltaMovement = new Vector3(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"), 0).normalized;
             rb2D.velocity = deltaMovement * playerSpeed;
+        }
+        else
+        {
+            rb2D.velocity = Vector3.zero;
         }
     }
 }

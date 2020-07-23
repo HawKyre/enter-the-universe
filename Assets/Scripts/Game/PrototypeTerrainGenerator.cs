@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using System;
+using System.IO;
 
-public class PrototypeTerrainGenerator : MonoBehaviour, ITerrainGenerator
+public class PrototypeTerrainGenerator : TerrainGenerator
 {
     // Static fields
     private static double LAKE_MAX_RADIUS = 12;
@@ -15,47 +16,14 @@ public class PrototypeTerrainGenerator : MonoBehaviour, ITerrainGenerator
     private static int BORDER_THICKNESS = 3;
     private static int FOREST_MIN_RADIUS = 6;
     private static int FOREST_MAX_RADIUS = 15;
+    private static Vector3 treeCenterer = new Vector3(0.5f, 0.3f, 0);
 
-    [SerializeField] private Tilemap baseTilemap;
-    [SerializeField] private Tilemap boundsTilemap;
-
-    [SerializeField] private GameObject natureEntities;
-    [SerializeField] private GameObject treePrefab;
-
-    [SerializeField] private TileAssets prototypeTileAssets;
-    [SerializeField] private Transform playerTransform;
-    
-    private GameSceneSetup gameSceneSetup;
-
-    private int h, w;
-
-    private long seed;
-
-    private Vector3 treeCenterer = new Vector3(0.5f, 0.3f, 0);
-
-    // Used to generate random local seeds
-    private System.Random random;
-
-    private void Awake() {
-        gameSceneSetup = GetComponent<GameSceneSetup>();
-    }
-
-    private void Start() {
-        seed = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        random = new System.Random((int) seed);
-
-        GenerateMap();
-
-        gameSceneSetup.SetupCameraBox(h, w);
-        gameSceneSetup.MovePlayerToSpawnPos(random, h, w, boundsTilemap);
-    }
-
-    public void GenerateMap()
+    // NEEDS TO BE GONE 🦀
+    public static ZoneState GenerateZone(long seed, Vector2Int zoneIndex)
     {
-        h = 64;
-        w = 64;
-
-        GameState.GetInstance()._MapObject.InstantiateZoneMap(w, h);
+        int h = 64;
+        int w = 64;
+        ZoneState zs = new ZoneState(100, 100, zoneIndex);
 
         // Generate base map
         for (int y = -BORDER_THICKNESS; y < h + BORDER_THICKNESS; y++)
@@ -65,32 +33,37 @@ public class PrototypeTerrainGenerator : MonoBehaviour, ITerrainGenerator
                 if (y < 0 || x < 0 || y >= h || x >= w)
                 {
                     // Bounds tile
-                    boundsTilemap.SetTile(new Vector3Int(x, y, 0), prototypeTileAssets.boundsRuleTile);
+                    // boundsTilemap.SetTile(new Vector3Int(x, y, 0), AssetLoader.GetTileID("bounds_tile").tile);
+                    zs.Tiles[x][y] = AssetLoader.GetTileID("bounds_tile");
                 }
                 else
                 {
-                    // Collidable tile
-                    baseTilemap.SetTile(new Vector3Int(x, y, 0), prototypeTileAssets.groundRuleTile);
+                    // Ground tile
+                    // baseTilemap.SetTile(new Vector3Int(x, y, 0), AssetLoader.GetTileID("ground_tile").tile);
+                    zs.Tiles[x][y] = AssetLoader.GetTileID("ground_tile");
                 }
             }
         }
 
+        System.Random r = new System.Random((int) seed);
+
         // Generate a river
-        GenerateBezierRiver();
+        GenerateBezierRiver(r, zs, h, w);
 
         // Generate a lake
-        GenerateLake();
+        GenerateLake(r, zs, h, w);
 
         // Generate trees
-        GenerateTrees();
+        GenerateTrees(r, zs, h, w);
 
-        // Maybe we need this
-        baseTilemap.RefreshAllTiles();
+        // TODO Maybe we need this
+        // baseTilemap.RefreshAllTiles();
+
+        return zs;
     }
 
-    private void GenerateLake()
+    private static void GenerateLake(System.Random lr, ZoneState zs, int h, int w)
     {
-        System.Random lr = new System.Random(random.Next());
 
         // Select a random center point
         int lake_centerX = lr.Next(w);
@@ -113,8 +86,7 @@ public class PrototypeTerrainGenerator : MonoBehaviour, ITerrainGenerator
                 {
                     if (lr.NextDouble() > dist * dist)
                     {
-                        boundsTilemap.SetTile(pos, prototypeTileAssets.boundsRuleTile);
-                        baseTilemap.SetTile(pos, null);
+                        zs.Tiles[x][y] = AssetLoader.GetTileID("bounds_tile");
                     }
                 }
             }
@@ -122,10 +94,8 @@ public class PrototypeTerrainGenerator : MonoBehaviour, ITerrainGenerator
     }
 
 
-    private void GenerateRiver()
+    private static void GenerateRiver(System.Random lr, ZoneState zs, int h, int w)
     {   
-        // We use the random to generate a local random seed
-        System.Random lr = new System.Random(random.Next());
 
         int river_side = lr.Next();
         
@@ -165,24 +135,21 @@ public class PrototypeTerrainGenerator : MonoBehaviour, ITerrainGenerator
                 Vector3Int pos = new Vector3Int(x, y, 0);
 
                 float a1 = Mathf.Abs(Vector3.Dot(pos - river_startPos, river_normal));
-
+                
+                // TODO - IMPROVE FOR FUCKS SAKE
                 if (a1 < RIVER_THICKNESS)
                 {
                     if (a1 / RIVER_THICKNESS < 0.7f || lr.NextDouble() > a1 / RIVER_THICKNESS)
                     {
-                        boundsTilemap.SetTile(pos, prototypeTileAssets.boundsRuleTile);
-                        baseTilemap.SetTile(pos, null);
+                        zs.Tiles[x][y] = AssetLoader.GetTileID("bounds_tile");
                     }
                 }
             }
         }
     }
 
-    private void GenerateBezierRiver()
+    private static void GenerateBezierRiver(System.Random lr, ZoneState zs, int h, int w)
     {
-        // We use the random to generate a local random seed
-        System.Random lr = new System.Random(random.Next());
-
         int river_side = lr.Next();
         
 
@@ -225,14 +192,15 @@ public class PrototypeTerrainGenerator : MonoBehaviour, ITerrainGenerator
             var point = bezier.GetPoint(t);
             Vector3Int tilePos = Util.ToVector3Int(point);
 
-            boundsTilemap.SetTile(tilePos, prototypeTileAssets.boundsRuleTile);
-            baseTilemap.SetTile(tilePos, null);
+            zs.Tiles[tilePos.x][tilePos.y] = AssetLoader.GetTileID("bounds_tile");
 
             // TODO - change
             for (int x = -RIVER_BEZIER_WIDTH / 2; x < (RIVER_BEZIER_WIDTH + 1) / 2; x++)
             {
-                boundsTilemap.SetTile(tilePos + new Vector3Int(x, 0, 0), prototypeTileAssets.boundsRuleTile);
-                baseTilemap.SetTile(tilePos + new Vector3Int(x, 0, 0), null);
+                // boundsTilemap.SetTile(tilePos + new Vector3Int(x, 0, 0), AssetLoader.GetTileID("bounds_tile").tile);
+                // baseTilemap.SetTile(tilePos + new Vector3Int(x, 0, 0), null);
+
+                zs.Tiles[tilePos.x + x][tilePos.y] = AssetLoader.GetTileID("bounds_tile");
             }
         }
 
@@ -255,11 +223,9 @@ public class PrototypeTerrainGenerator : MonoBehaviour, ITerrainGenerator
         */
     }
 
-    private void GenerateTrees()
+    private static void GenerateTrees(System.Random lr, ZoneState zs, int h, int w)
     {
-        System.Random lr = new System.Random(random.Next());
-
-        // Select 1 to 4 forest starting points
+        // Select 2 to 5 forest starting points
         // Populate them with a elliptical circle
         // Add random trees
         // Make sure to fix the z index later
@@ -293,7 +259,7 @@ public class PrototypeTerrainGenerator : MonoBehaviour, ITerrainGenerator
                     var vPos = new Vector3Int(x, y, 0);
 
                     // TODO - check
-                    if (treeGrid[y][x] || CloseToBounds(vPos))
+                    if (treeGrid[y][x] || CloseToBounds(vPos, zs))
                         continue;
 
                     Vector3 tilePos = vPos + treeCenterer;
@@ -309,74 +275,30 @@ public class PrototypeTerrainGenerator : MonoBehaviour, ITerrainGenerator
 
                         // treeEntity.EntityObject.transform.position = tilePos;
 
-                        GameState.GetInstance()._MapObject.ZoneMap.AddEntity(new Vector2Int(x, y), treeEntity);
+                        GameState.GetInstance()._ZoneState.AddEntity(new Vector2Int(x, y), treeEntity);
                     }
                 }
             }
         }
     }
 
-    private float InsideEllipse(Vector2 center, Vector3Int point, double rX, double rY)
+    private static float InsideEllipse(Vector2 center, Vector3Int point, double rX, double rY)
     {
         return Mathf.Pow((point.x - center.x), 2) / Mathf.Pow((float)rX, 2) + Mathf.Pow((point.y - center.y), 2) / Mathf.Pow((float)rY, 2);
     }
 
-    private float InsideCircle(Vector2 center, Vector3Int point, float r)
+    private static float InsideCircle(Vector2 center, Vector3Int point, float r)
     {
         return (Mathf.Pow((point.x - center.x), 2) + Mathf.Pow((point.y - center.y), 2)) / r*r;
     }
     
-    private bool CloseToBounds(Vector3Int pos)
+    private static bool CloseToBounds(Vector3Int pos, ZoneState zs)
     {
         for (int i = 0; i < 8; i++)
         {
-            if (boundsTilemap.HasTile(pos + new Vector3Int(Util.SURROUNDING_X[i], Util.SURROUNDING_Y[i], 0)))
+            if (SceneReferences.boundsTilemap.HasTile(pos + new Vector3Int(Util.SURROUNDING_X[i], Util.SURROUNDING_Y[i], 0)))
                 return true;
         }
         return false;
     }
 }
-
-/*
-
-for (int x = 0; x < w; x++)
-        {
-            for (int y = 0; y < h; y++)
-            {
-                Vector2 pos = new Vector2(x, y);
-
-                double t = 0.5f;
-                double iPow = 1;
-                for (int i = 0; i < 8; i++)
-                {
-                    iPow /= 2.0;
-                    double d1 = Vector2.Distance(bezier.GetPoint(t + iPow), pos);
-                    double d2 = Vector2.Distance(bezier.GetPoint(t - iPow), pos);
-
-                    print($"{d1} from {bezier.GetPoint(t + iPow)} - {d2} from {bezier.GetPoint(t - iPow)}");
-
-                    if (d1 < d2)
-                    {
-                        print("increas");
-                        t += iPow;
-                    }
-                    else
-                    {
-                        print("decreas");
-                        t -= iPow;
-                    }
-                }
-
-                print(bezier.GetPoint(t));
-                if (Vector2.Distance(bezier.GetPoint(t), pos) < 8f)
-                {
-                    var v = Util.ToVector3Int(pos);
-                    boundsTilemap.SetTile(v, prototypeTileAssets.boundsRuleTile);
-                    baseTilemap.SetTile(v, null);
-                }
-
-                return;
-            }
-        }
-
-*/

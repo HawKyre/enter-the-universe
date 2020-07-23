@@ -13,7 +13,7 @@ public class GameEntity : MonoBehaviour
         // EntityInfo eInfo;
         // GameState.GetInstance()._EntityDictionary.eDict.TryGetValue(entityID, out eInfo);
 
-        GameItemData gameItemData = AssetLoader.GetData(entityID);
+        GameEntityData gameItemData = AssetLoader.GetData(entityID);
 
         if (gameItemData != null)
         {

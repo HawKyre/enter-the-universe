@@ -4,7 +4,7 @@ using UnityEngine;
 public class BreakableEntity : MonoBehaviour
 {
     private int damageStatus;
-    private GameItemData bInfo;
+    private GameEntityData bInfo;
     private int localID;
 
     public int DamageStatus { get => damageStatus; protected set => damageStatus = value; }
@@ -23,18 +23,6 @@ public class BreakableEntity : MonoBehaviour
 
         bInfo = AssetLoader.GetData(localID);
     }
-
-    // public BreakableEntity(int entityID, Vector3 gameEntityPos)
-    // {
-    //     // We can assume that 
-    //     EntityInfo eInfo;
-    //     GameState.GetInstance()._EntityDictionary.eDict.TryGetValue(entityID, out eInfo);
-        
-    //     if (eInfo is BreakableEntityInfo)
-    //     {
-    //         bInfo = eInfo as BreakableEntityInfo;
-    //     }
-    // }
     
     public void Break()
     {
@@ -53,7 +41,7 @@ public class BreakableEntity : MonoBehaviour
                 var ce = collectible.AddComponent<CollectableEntity>();
 
                 print("This should be 2 or 3: " + drop.id);
-                ce.SetCollectible(drop.GetItemStack());
+                ce.SetCollectible(new ItemStack(drop.id, 1));
                 ce.Move(dropDirection);
             }
         }

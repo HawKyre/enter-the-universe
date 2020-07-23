@@ -14,7 +14,7 @@ public class ItemObject : MonoBehaviour
     {
         if (other.tag == "Player")
         {
-            GameState.GetInstance()._PlayerInventory.AddItem(ItemStack);
+            GameState.GetInstance()._PlayerState.playerInventory.AddItem(ItemStack);
             StartCoroutine(AnimateCollection(other.transform));
         }
     }

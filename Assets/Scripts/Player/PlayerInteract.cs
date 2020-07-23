@@ -15,6 +15,13 @@ public class PlayerInteract : MonoBehaviour
     }
 
     private void Update() {
+
+        if (GameState.GetInstance()._CurrentUIState != UIIngameState.GAME)
+        {
+            crossTilemap.ClearAllTiles();
+            return;
+        }
+
         // Get the tile we're looking at
         // Render a selection square at it
         var mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -29,7 +36,7 @@ public class PlayerInteract : MonoBehaviour
         
         if (Input.GetMouseButtonDown(0))
         {
-            GameState.GetInstance()._MapObject.ZoneMap.DestroyEntity(new Vector2Int(currentPos.x, currentPos.y));
+            GameState.GetInstance()._ZoneState.DestroyEntity(new Vector2Int(currentPos.x, currentPos.y));
         }
     }
 }

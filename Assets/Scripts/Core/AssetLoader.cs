@@ -5,55 +5,115 @@ using UnityEngine;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public static class AssetLoader
 {
-    public static string dataPath = "./data/id.json";
-    public static string texturesPath = "Assets/Textures";
-    public static Dictionary<int, GameItemData> gameDict;
+    public static bool dataLoaded = false;
+
+    // public static string dataPath = "./data/entitydata.json";
+    // public static string texturesPath = "Assets/Textures";
+    public static string addrDataPath = "Assets/data";
+    public static string addrTexturePath = "Assets/data/textures";
+    public static string addrTilePath = "Assets/data/tiles";
+
+    private static Dictionary<int, GameEntityData> entityInfoDict;
+    private static Dictionary<int, GameTileData> tileInfoDict;
+
+    private static Dictionary<string, int> entityTagTranslator;
+    private static Dictionary<string, int> tileTagTranslator;
 
     public static void LoadGameData()
     {
-        // TODO - improve probably
+        // TODO - still it can probably be improved
+        LoadEntityData();
+        LoadTileData();
 
-        string gameData = File.ReadAllText(Application.dataPath + dataPath);
-        var items = JsonConvert.DeserializeObject<JsonItemData[]>(gameData);
 
-        Debug.Log("PLEASE " + items.Length);
+        dataLoaded = true;
+    }
 
-        gameDict = new Dictionary<int, GameItemData>();
+    public static GameEntityData GetEntityData(string entityTag)
+    {
+        return entityInfoDict[entityTagTranslator[entityTag]];
+    }
 
-        foreach (var item in items)
+    public static GameTileData GetTileData(string tileTag)
+    {
+        return tileInfoDict[tileTagTranslator[tileTag]];
+    }
+
+    public static GameTileData GetTileData(int v)
+    {
+        return tileInfoDict[v];
+    }
+
+    public static int GetTileID(string v)
+    {
+        return tileTagTranslator[v];
+    }
+
+    private static async void LoadTileData()
+    {
+        var gameData = await Addressables.LoadAssetAsync<TextAsset>($"{addrDataPath}/tiledata.json").Task;
+        var tiles = JsonConvert.DeserializeObject<JsonTileData[]>(gameData.text);
+
+        tileInfoDict = new Dictionary<int, GameTileData>();
+        tileTagTranslator = new Dictionary<string, int>();
+
+        foreach (var tile in tiles)
         {
-            GameItemData d = new GameItemData();
-            d.name = item.name;
-            // d.sprite = (Sprite) AssetDatabase.LoadAssetAtPath(texturesPath + "/" + Util.SnakeToCamel(d.name) + ".png", typeof(Sprite));
+            GameTileData tD = new GameTileData();
+            tD.collidable = tile.collidable;
+            tD.tile = await Addressables.LoadAssetAsync<RuleTile>($"{addrTilePath}/{Util.SnakeToCamel(tD.name)}.asset").Task;
 
-            d.sprite = (Sprite) AssetDatabase.LoadAssetAtPath($"{texturesPath}/{Util.SnakeToCamel(d.name)}.png", typeof(Sprite));
-
-            Debug.Log(texturesPath + "/" + Util.SnakeToCamel(d.name) + ".png");
-
-            d.type = (GameItemType) Enum.Parse(typeof(GameItemType), item.type);
-            if (d.type == GameItemType.BREAKABLE)
-            {
-                d.dropData = DropData.GetDropData(item.drop);
-                d.minPower = item.min_power;
-                d.hp = item.hp;
-            }
-            gameDict.Add(item.id, d);
+            tileInfoDict.Add(tile.id, tD);
+            tileTagTranslator.Add(tile.name, tile.id);
         }
     }
 
-    public static GameItemData GetData(int id)
+    private static async void LoadEntityData()
     {
-        GameItemData data;
-        gameDict.TryGetValue(id, out data);
+        var gameData = await Addressables.LoadAssetAsync<TextAsset>($"{addrDataPath}/entity.json").Task;
+        var entities = JsonConvert.DeserializeObject<JsonEntityData[]>(gameData.text);
+
+        entityInfoDict = new Dictionary<int, GameEntityData>();
+        entityTagTranslator = new Dictionary<string, int>();
+
+        foreach (var entity in entities)
+        {
+            GameEntityData eD = new GameEntityData();
+
+            eD.name = entity.name;
+            eD.type = (GameItemType) Enum.Parse(typeof(GameItemType), entity.type);
+            if (eD.type == GameItemType.BREAKABLE)
+            {
+                eD.dropData = DropData.GetDropData(entity.drop);
+                eD.minPower = entity.min_power;
+                eD.hp = entity.hp;
+            }
+
+            Sprite s = await Addressables.LoadAssetAsync<Sprite>($"{addrTexturePath}/{Util.SnakeToCamel(eD.name)}.png").Task;
+
+            eD.sprite = s;
+
+            entityInfoDict.Add(entity.id, eD);
+            entityTagTranslator.Add(entity.name, entity.id);
+        }
+    }
+
+
+    public static GameEntityData GetData(int id)
+    {
+        GameEntityData data;
+        entityInfoDict.TryGetValue(id, out data);
 
         Debug.Log($"Retrieving data for ID {id}: {data.ToString()}");
 
         if (data != null)
         {
-            return gameDict[id];
+            return entityInfoDict[id];
         }
 
         return null;
@@ -66,7 +126,7 @@ public class ItemDropData
     public int fixedDropCount;
     public bool hasRange;
     public Range dropRange;
-    public double probability;
+    public float probability;
 
     private int activeDropCount = -1;
 
@@ -80,6 +140,7 @@ public class ItemDropData
         {
             activeDropCount = UnityEngine.Random.Range(0f, 1f) < probability ? fixedDropCount : 0;
         }
+        Debug.Log(hasRange + "-" + probability + "-" + activeDropCount + "-" + fixedDropCount);
         return activeDropCount;
     }
 
@@ -87,7 +148,7 @@ public class ItemDropData
     {
         if (activeDropCount < 0)
         {
-            throw new Exception();
+            GetDropCount();
         }
 
         return new ItemStack(id, activeDropCount);
@@ -115,6 +176,7 @@ public class DropData
             int id = int.Parse(iData[0]);
 
             dData.id = id;
+            dData.probability = 1;
 
             Debug.Log($"Adding drop with id {id} for string {dropString}");
 
@@ -124,7 +186,7 @@ public class DropData
                 if (attr[0] == '%')
                 {
                     // probability attribute
-                    dData.probability = double.Parse(attr.Replace('%', ' '));
+                    dData.probability = float.Parse(attr.Replace('%', ' '));
                     Debug.Log(dData.probability);
                 }
                 else if (attr[0] == 'c')
@@ -136,6 +198,7 @@ public class DropData
                         dData.hasRange = false;
                         Debug.Log("WERRR"  +attr);
                         dData.fixedDropCount = int.Parse(attr.Replace('c', ' '));
+
                     }
                     else
                     {
@@ -153,7 +216,7 @@ public class DropData
     }
 }
 
-public class JsonItemData
+public class JsonEntityData
 {
     public int id;
     public string name;
@@ -163,7 +226,7 @@ public class JsonItemData
     public int min_power;
 }
 
-public class GameItemData
+public class GameEntityData
 {
     public Sprite sprite;
     public string name;
@@ -176,6 +239,20 @@ public class GameItemData
     {
         return $"{name} / {type.ToString()}";
     }
+}
+
+public class JsonTileData
+{
+    public int id;
+    public string name;
+    public bool collidable;
+}
+
+public class GameTileData
+{
+    public RuleTile tile;
+    public string name;
+    public bool collidable;
 }
 
 public enum GameItemType

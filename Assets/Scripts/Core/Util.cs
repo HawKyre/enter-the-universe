@@ -33,4 +33,45 @@ public static class Util
     {
         return (char) (m.Value[1] - 32) + "";
     }
+
+    public static int ZZtoZ(Vector2Int pos)
+    {
+        int x = pos.x;
+        int y = pos.y;
+        
+        if (x == 0 && y == 0) return 0;
+        
+        int n = Math.Max(Math.Abs(x), Math.Abs(y));
+        
+        int angle = (int) (Math.Atan2(-y, x) * 360/(2*Math.PI));
+        if (angle < 0) angle = angle + 360;
+
+            
+        if (angle < 45 || angle >= 225)
+        {
+            // negative value
+            return -ZZtoZ(new Vector2Int(-x, -y));
+        }
+        
+        // positive value
+        if (Math.Abs(y) == n)
+        {
+            return d1(n) + n - x;
+        }
+        return d2(n) + n - y;
+    }
+
+    private static int d1(int n)
+    {
+        if (n == 0) return 0;
+        n--;
+        return 2*n*(n+1) + 1;
+    }
+    
+    private static int d2(int n)
+    {
+        if (n == 0) return 0;
+        n--;
+        return 2*(n+1) + 2*n*(n+1) + 1;
+    }
 }

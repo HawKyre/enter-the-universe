@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "name": "ground_tile",
+    "collidable": false
+  },
+  {
+    "id": 2,
+    "name": "bounds_tile",
+    "collidable": true
+  }
+]
