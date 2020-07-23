@@ -6,6 +6,13 @@ using Newtonsoft.Json;
 
 public class ZoneState
 {
+    /*
+        IDEAS:
+        Create a encoded class in which there's all of the data needed to load this one
+        tiles as an int
+        map entities as an ID array as well?
+        map items as a list of something with v3 and ID
+    */
     private int[][] tiles;
     private GameObject[][] mapEntities;
     private List<CollectableEntity> mapItems;
