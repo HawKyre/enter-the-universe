@@ -5,11 +5,11 @@ using UnityEngine;
 public class PlayerState
 {
     public Inventory playerInventory;
-    public SVector2 position;
+    public SVector3 position;
 
     public SVector2Int currentZone;
 
-    public PlayerState(Inventory playerInventory, SVector2 position)
+    public PlayerState(Inventory playerInventory, SVector3 position)
     {
         this.playerInventory = playerInventory;
         this.position = position;

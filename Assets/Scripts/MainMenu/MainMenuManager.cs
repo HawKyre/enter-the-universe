@@ -31,6 +31,8 @@ public class MainMenuManager : MonoBehaviour
         {
             Directory.CreateDirectory(pUnivDataPath);
         }
+
+        AssetLoader.LoadGameData();
     }
 
     public void LoadWorlds()
@@ -81,7 +83,6 @@ public class MainMenuManager : MonoBehaviour
         fs.Close();
 
         // univ.dat setup
-        // Dictionary<string, string> dataEncoder = new Dictionary<string, string>();
 
         UniverseData uData = new UniverseData();
 
@@ -103,16 +104,14 @@ public class MainMenuManager : MonoBehaviour
         File.WriteAllText(univDataPath, univDat);
 
         // player.dat setup
-        PlayerState playerState = new PlayerState(new Inventory(), Vector2.zero);
+        PlayerState playerState = new PlayerState(new Inventory(), Vector3.zero);
 
         string playerDat = JsonConvert.SerializeObject(playerState);
 
         File.WriteAllText(playerDataPath, playerDat);
 
-        print(playerDat);
-
         PlayerPrefs.SetString("univPath", newUnivPath);
 
-        // sceneTransition.GoToScene(1);
+        sceneTransition.GoToScene(1);
     }
 }

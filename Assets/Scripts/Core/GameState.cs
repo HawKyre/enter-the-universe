@@ -12,7 +12,6 @@ public class GameState : MonoBehaviour
     
     // TODO - Load it from assets instead of dragging because dragging bad
     [SerializeField] private GameObject defaultEntity;
-    [SerializeField] 
 
     private Transform breakableEntityParent;
     private Transform staticEntityParent;
@@ -53,7 +52,7 @@ public class GameState : MonoBehaviour
 
     private void LoadUniverseData()
     {
-        string univDataPath = PlayerPrefs.GetString("univData") + "/univ.dat";
+        string univDataPath = PlayerPrefs.GetString("univPath") + "/univ.dat";
         string univDat = File.ReadAllText(univDataPath);
         this.universeData = JsonConvert.DeserializeObject<UniverseData>(univDat);
     }
@@ -63,35 +62,86 @@ public class GameState : MonoBehaviour
         if (playerState == null) 
         {
             // read the player state
-            string playerDataPath = PlayerPrefs.GetString("univData") + "/player.dat";
+            string playerDataPath = PlayerPrefs.GetString("univPath") + "/player.dat";
             string playerDat = File.ReadAllText(playerDataPath);
             this.playerState = JsonConvert.DeserializeObject<PlayerState>(playerDat);
         }
 
-        string zoneFolder = $"{PlayerPrefs.GetString("univData")}/zones/{playerState.currentZone.x},{playerState.currentZone.y}";
+        string zoneFolder = $"{PlayerPrefs.GetString("univPath")}/zones/{playerState.currentZone.x},{playerState.currentZone.y}";
         // If there's no file with the current zone, create it and store it
         // If there is, read it and load it
         string zoneDatPath = $"{zoneFolder}/{playerState.currentZone.x}.{playerState.currentZone.y}.zone";
 
-        if (!Directory.Exists(zoneFolder))
+        SZoneState newZoneState;
+        bool isFirstTime = false;
+
+        if (!File.Exists(zoneDatPath))
         {
             // Generate all the surrounding ones?
             Directory.CreateDirectory(zoneFolder);
             
             // Create one and write it
-            ZoneState newZoneState = TerrainGenerator.GenerateNewZone_v0(universeData.seed1, playerState.currentZone);
+            newZoneState = TerrainGenerator.GenerateNewZone_v0(universeData.seed1, playerState.currentZone);
             string zoneDat = JsonConvert.SerializeObject(newZoneState);
+            
+            FileStream fs = File.Create(zoneDatPath);
+            fs.Close();
+
             File.WriteAllText(zoneDatPath, zoneDat);
+
+            isFirstTime = true;
         }
         else
         {
             string zoneDat = File.ReadAllText(zoneDatPath);
-            this.zoneState = JsonConvert.DeserializeObject<ZoneState>(zoneDat);
+            newZoneState = JsonConvert.DeserializeObject<SZoneState>(zoneDat);
+        }
+
+        this.zoneState = new ZoneState(newZoneState);
+
+        // Move the player
+        if (isFirstTime)
+        {
+            MovePlayerToSpawnPos();
+        }
+        else
+        {
+            GameObject.FindGameObjectWithTag("Player").transform.position = _PlayerState.position;
         }
     }
 
     public static GameState GetInstance()
     {
         return Instance;
+    }
+
+    private void MovePlayerToSpawnPos()
+    {
+        System.Random _r = new System.Random((int) DateTimeOffset.Now.ToUnixTimeMilliseconds());
+
+        bool validSpawn = false;
+        Vector3 spawnPos = new Vector3();
+        while (!validSpawn)
+        {
+            validSpawn = true;
+
+            spawnPos = new Vector3(
+                _r.Next(_ZoneState.Height/4, _ZoneState.Height*3/4),
+                _r.Next(_ZoneState.Width/4, _ZoneState.Width*3/4),
+                0
+            );
+
+            for (int i = 0; validSpawn && i < 8; i++)
+            {
+                Vector3Int checkPos = new Vector3Int(
+                    (int) spawnPos.x + Util.SURROUNDING_X[i],
+                    (int) spawnPos.y + Util.SURROUNDING_Y[i],
+                    0
+                );
+                validSpawn &= !SceneReferences.boundsTilemap.HasTile(checkPos);
+            }
+        }
+
+        GameObject.FindGameObjectWithTag("Player").transform.position = spawnPos;
     }
 }

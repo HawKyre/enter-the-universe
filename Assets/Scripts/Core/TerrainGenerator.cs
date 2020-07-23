@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class TerrainGenerator
 {
-    public static ZoneState GenerateNewZone_v0(long seed, Vector2Int zoneIndex)
+    public static SZoneState GenerateNewZone_v0(long seed, Vector2Int zoneIndex)
     {
         return PrototypeTerrainGenerator.GenerateZone(seed, zoneIndex);
     }

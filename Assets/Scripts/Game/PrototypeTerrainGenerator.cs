@@ -18,12 +18,11 @@ public class PrototypeTerrainGenerator : TerrainGenerator
     private static int FOREST_MAX_RADIUS = 15;
     private static Vector3 treeCenterer = new Vector3(0.5f, 0.3f, 0);
 
-    // NEEDS TO BE GONE 🦀
-    public static ZoneState GenerateZone(long seed, Vector2Int zoneIndex)
+    public static SZoneState GenerateZone(long seed, Vector2Int zoneIndex)
     {
         int h = 64;
         int w = 64;
-        ZoneState zs = new ZoneState(100, 100, zoneIndex);
+        SZoneState zs = new SZoneState(h, w, zoneIndex);
 
         // Generate base map
         for (int y = -BORDER_THICKNESS; y < h + BORDER_THICKNESS; y++)
@@ -34,13 +33,13 @@ public class PrototypeTerrainGenerator : TerrainGenerator
                 {
                     // Bounds tile
                     // boundsTilemap.SetTile(new Vector3Int(x, y, 0), AssetLoader.GetTileID("bounds_tile").tile);
-                    zs.Tiles[x][y] = AssetLoader.GetTileID("bounds_tile");
+                    zs.tileIDs.Add(new SVector2Int(x, y), AssetLoader.GetTileID("bounds_tile"));
                 }
                 else
                 {
                     // Ground tile
                     // baseTilemap.SetTile(new Vector3Int(x, y, 0), AssetLoader.GetTileID("ground_tile").tile);
-                    zs.Tiles[x][y] = AssetLoader.GetTileID("ground_tile");
+                    zs.tileIDs.Add(new SVector2Int(x, y), AssetLoader.GetTileID("ground_tile"));
                 }
             }
         }
@@ -62,7 +61,7 @@ public class PrototypeTerrainGenerator : TerrainGenerator
         return zs;
     }
 
-    private static void GenerateLake(System.Random lr, ZoneState zs, int h, int w)
+    private static void GenerateLake(System.Random lr, SZoneState zs, int h, int w)
     {
 
         // Select a random center point
@@ -86,7 +85,7 @@ public class PrototypeTerrainGenerator : TerrainGenerator
                 {
                     if (lr.NextDouble() > dist * dist)
                     {
-                        zs.Tiles[x][y] = AssetLoader.GetTileID("bounds_tile");
+                        zs.tileIDs[new SVector2Int(x, y)] = AssetLoader.GetTileID("bounds_tile");
                     }
                 }
             }
@@ -94,7 +93,7 @@ public class PrototypeTerrainGenerator : TerrainGenerator
     }
 
 
-    private static void GenerateRiver(System.Random lr, ZoneState zs, int h, int w)
+    private static void GenerateRiver(System.Random lr, SZoneState zs, int h, int w)
     {   
 
         int river_side = lr.Next();
@@ -141,14 +140,14 @@ public class PrototypeTerrainGenerator : TerrainGenerator
                 {
                     if (a1 / RIVER_THICKNESS < 0.7f || lr.NextDouble() > a1 / RIVER_THICKNESS)
                     {
-                        zs.Tiles[x][y] = AssetLoader.GetTileID("bounds_tile");
+                        zs.tileIDs[new SVector2Int(x, y)] = AssetLoader.GetTileID("bounds_tile");
                     }
                 }
             }
         }
     }
 
-    private static void GenerateBezierRiver(System.Random lr, ZoneState zs, int h, int w)
+    private static void GenerateBezierRiver(System.Random lr, SZoneState zs, int h, int w)
     {
         int river_side = lr.Next();
         
@@ -192,7 +191,7 @@ public class PrototypeTerrainGenerator : TerrainGenerator
             var point = bezier.GetPoint(t);
             Vector3Int tilePos = Util.ToVector3Int(point);
 
-            zs.Tiles[tilePos.x][tilePos.y] = AssetLoader.GetTileID("bounds_tile");
+            zs.tileIDs[new SVector2Int(tilePos.x, tilePos.y)] = AssetLoader.GetTileID("bounds_tile");
 
             // TODO - change
             for (int x = -RIVER_BEZIER_WIDTH / 2; x < (RIVER_BEZIER_WIDTH + 1) / 2; x++)
@@ -200,7 +199,7 @@ public class PrototypeTerrainGenerator : TerrainGenerator
                 // boundsTilemap.SetTile(tilePos + new Vector3Int(x, 0, 0), AssetLoader.GetTileID("bounds_tile").tile);
                 // baseTilemap.SetTile(tilePos + new Vector3Int(x, 0, 0), null);
 
-                zs.Tiles[tilePos.x + x][tilePos.y] = AssetLoader.GetTileID("bounds_tile");
+                zs.tileIDs[new SVector2Int(tilePos.x + x, tilePos.y)] = AssetLoader.GetTileID("bounds_tile");
             }
         }
 
@@ -223,7 +222,7 @@ public class PrototypeTerrainGenerator : TerrainGenerator
         */
     }
 
-    private static void GenerateTrees(System.Random lr, ZoneState zs, int h, int w)
+    private static void GenerateTrees(System.Random lr, SZoneState zs, int h, int w)
     {
         // Select 2 to 5 forest starting points
         // Populate them with a elliptical circle
@@ -270,12 +269,18 @@ public class PrototypeTerrainGenerator : TerrainGenerator
                     {
                         treeGrid[y][x] = true;
                         
-                        GameObject treeEntity = GameEntity.GenerateGameEntity(1, tilePos);
-                        treeEntity.AddComponent<BreakableEntity>();
+                        // GameObject treeEntity = GameEntity.GenerateGameEntity(1, tilePos);
+                        // treeEntity.AddComponent<BreakableEntity>();
+                        GameObjectInfo e = new GameObjectInfo();
+                        e.entityID = AssetLoader.GetEntityID("prototype_tree");
+                        e.pos = new SVector3Int(x, y, 0);
+                        e.entityType = EntityType.BREAKABLE;
+                        
+                        zs.entityInfo.Add(e);
 
                         // treeEntity.EntityObject.transform.position = tilePos;
 
-                        GameState.GetInstance()._ZoneState.AddEntity(new Vector2Int(x, y), treeEntity);
+                        // GameState.GetInstance()._ZoneState.AddEntity(new Vector2Int(x, y), treeEntity);
                     }
                 }
             }
@@ -292,7 +297,7 @@ public class PrototypeTerrainGenerator : TerrainGenerator
         return (Mathf.Pow((point.x - center.x), 2) + Mathf.Pow((point.y - center.y), 2)) / r*r;
     }
     
-    private static bool CloseToBounds(Vector3Int pos, ZoneState zs)
+    private static bool CloseToBounds(Vector3Int pos, SZoneState zs)
     {
         for (int i = 0; i < 8; i++)
         {

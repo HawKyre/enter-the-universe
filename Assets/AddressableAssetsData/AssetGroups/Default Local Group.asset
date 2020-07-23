@@ -24,7 +24,7 @@ MonoBehaviour:
     m_MainAsset: {fileID: 0}
     m_TargetAsset: {fileID: 0}
   - m_GUID: ca02be713aa8b45458da34d71232c4c8
-    m_Address: Assets/Tilemaps/Tiles/Ground Tile.asset
+    m_Address: Assets/data/tiles/groundTile.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     m_MainAsset: {fileID: 0}
@@ -42,7 +42,7 @@ MonoBehaviour:
     m_MainAsset: {fileID: 0}
     m_TargetAsset: {fileID: 0}
   - m_GUID: f753925034e24b74a9297a5211a25ff7
-    m_Address: Assets/Tilemaps/Tiles/Bounds Tile.asset
+    m_Address: Assets/data/tiles/boundsTile.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     m_MainAsset: {fileID: 0}

@@ -18,19 +18,19 @@ MonoBehaviour:
   m_GUID: 742ef42160c89e3488506e4bf3b89738
   m_SerializeEntries:
   - m_GUID: 358c7aaeb1d82db46be0cc5774315d2f
-    m_Address: Assets/data/Textures/prototypeStick.png
+    m_Address: Assets/data/textures/prototypeStick.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     m_MainAsset: {fileID: 0}
     m_TargetAsset: {fileID: 0}
   - m_GUID: df49c7283da426e438131d378ad67c87
-    m_Address: Assets/data/Textures/prototypeTree.png
+    m_Address: Assets/data/textures/prototypeTree.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     m_MainAsset: {fileID: 0}
     m_TargetAsset: {fileID: 0}
   - m_GUID: efb2096388d442b4dabf807f87b25ca2
-    m_Address: Assets/data/Textures/prototypeWood.png
+    m_Address: Assets/data/textures/prototypeWood.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     m_MainAsset: {fileID: 0}

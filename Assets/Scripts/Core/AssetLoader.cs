@@ -6,7 +6,6 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.AsyncOperations;
 
 public static class AssetLoader
 {
@@ -30,28 +29,62 @@ public static class AssetLoader
         LoadEntityData();
         LoadTileData();
 
-
         dataLoaded = true;
+
+        Debug.Log("LOADED");
     }
 
     public static GameEntityData GetEntityData(string entityTag)
     {
+        if (!entityTagTranslator.ContainsKey(entityTag))
+        {
+            throw new NullReferenceException("Attemped to index by " + entityTag);
+        }
         return entityInfoDict[entityTagTranslator[entityTag]];
+    }
+
+    public static GameEntityData GetEntityData(int entityID)
+    {
+        if (!entityInfoDict.ContainsKey(entityID))
+        {
+            throw new NullReferenceException("Attemped to index by " + entityID);
+        }
+        return entityInfoDict[entityID];
     }
 
     public static GameTileData GetTileData(string tileTag)
     {
+        if (!tileTagTranslator.ContainsKey(tileTag))
+        {
+            throw new NullReferenceException("Attemped to index by " + tileTag);
+        }
         return tileInfoDict[tileTagTranslator[tileTag]];
     }
 
-    public static GameTileData GetTileData(int v)
+    public static GameTileData GetTileData(int tileID)
     {
-        return tileInfoDict[v];
+        if (!tileInfoDict.ContainsKey(tileID))
+        {
+            throw new NullReferenceException("Attemped to index by " + tileID);
+        }
+        return tileInfoDict[tileID];
     }
 
     public static int GetTileID(string v)
     {
+        if (!tileTagTranslator.ContainsKey(v))
+        {
+            throw new NullReferenceException("Tried to access string " + v + " but no value was found");
+        }
         return tileTagTranslator[v];
+    }
+    public static int GetEntityID(string entityTag)
+    {
+        if (!entityTagTranslator.ContainsKey(entityTag))
+        {
+            throw new NullReferenceException("Tried to access string " + entityTag + " but no value was found");
+        }
+        return entityTagTranslator[entityTag];
     }
 
     private static async void LoadTileData()
@@ -62,20 +95,23 @@ public static class AssetLoader
         tileInfoDict = new Dictionary<int, GameTileData>();
         tileTagTranslator = new Dictionary<string, int>();
 
+
         foreach (var tile in tiles)
         {
+            Debug.Log("TL " + tile.name + " at path " + $"{addrTilePath}/{Util.SnakeToCamel(tile.name)}.asset" );
             GameTileData tD = new GameTileData();
             tD.collidable = tile.collidable;
-            tD.tile = await Addressables.LoadAssetAsync<RuleTile>($"{addrTilePath}/{Util.SnakeToCamel(tD.name)}.asset").Task;
+            tD.tile = await Addressables.LoadAssetAsync<RuleTile>($"{addrTilePath}/{Util.SnakeToCamel(tile.name)}.asset").Task;
 
             tileInfoDict.Add(tile.id, tD);
+            Debug.Log($"ADDING TILE {tile.name}");
             tileTagTranslator.Add(tile.name, tile.id);
         }
     }
 
     private static async void LoadEntityData()
     {
-        var gameData = await Addressables.LoadAssetAsync<TextAsset>($"{addrDataPath}/entity.json").Task;
+        var gameData = await Addressables.LoadAssetAsync<TextAsset>($"{addrDataPath}/entitydata.json").Task;
         var entities = JsonConvert.DeserializeObject<JsonEntityData[]>(gameData.text);
 
         entityInfoDict = new Dictionary<int, GameEntityData>();
@@ -93,7 +129,8 @@ public static class AssetLoader
                 eD.minPower = entity.min_power;
                 eD.hp = entity.hp;
             }
-
+            
+            Debug.Log("Accessing " + $"{addrTexturePath}/{Util.SnakeToCamel(eD.name)}.png");
             Sprite s = await Addressables.LoadAssetAsync<Sprite>($"{addrTexturePath}/{Util.SnakeToCamel(eD.name)}.png").Task;
 
             eD.sprite = s;
@@ -118,6 +155,7 @@ public static class AssetLoader
 
         return null;
     }
+
 }
 
 public class ItemDropData

@@ -68,4 +68,9 @@ using UnityEngine;
      {
          return new SVector3Int(rValue.x, rValue.y, rValue.z);
      }
+
+     public static implicit operator SVector3Int(Vector3 rValue)
+     {
+         return new SVector3Int((int) rValue.x, (int) rValue.y, (int) rValue.z);
+     }
  }
