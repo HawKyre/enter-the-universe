@@ -59,6 +59,14 @@ public class MainMenuManager : MonoBehaviour
         // For each world, load a prefab consisting of the name, a play and a delete
     }
 
+    public void PlayWorld(string name)
+    {
+        string newUnivPath = pUnivDataPath + "/" + name;
+        PlayerPrefs.SetString("univPath", newUnivPath);
+
+        sceneTransition.GoToScene(1);
+    }
+
     public void CreateWorld()
     {
         // File structure setup

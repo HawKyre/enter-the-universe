@@ -3,6 +3,7 @@
     "id": 1,
     "name": "prototype_tree",
     "type": "BREAKABLE",
+    "position_offset": [0.5, 0.5, 0.5],
     "drop": "2:c1,3;3:c2&%0.2",
     "hp": 5,
     "min_power": 0

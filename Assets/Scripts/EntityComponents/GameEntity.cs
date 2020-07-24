@@ -10,21 +10,21 @@ public class GameEntity : MonoBehaviour
 
     public static GameObject GenerateGameEntity(int entityID, Vector3 gameEntityPos)
     {
-        // EntityInfo eInfo;
-        // GameState.GetInstance()._EntityDictionary.eDict.TryGetValue(entityID, out eInfo);
-
         GameEntityData gameItemData = AssetLoader.GetData(entityID);
 
         if (gameItemData != null)
         {
-            var g = GameObject.Instantiate(GameState.GetInstance()._DefaultEntity);
+            var g = GameObject.Instantiate(GameState.GetInstance()._DefaultEntity, gameEntityPos, Quaternion.identity);
             var ge = g.AddComponent<GameEntity>();
             ge.ID = entityID;
             
             g.name = "Entity ID [" + entityID + "]";
             g.GetComponent<SpriteRenderer>().sprite = gameItemData.sprite;
 
-            g.transform.position = gameEntityPos;
+            print("POS: : : " + gameEntityPos);
+            // g.transform.position = gameEntityPos;
+
+            print(g.transform.position);
 
             return g;
         }

@@ -16,13 +16,22 @@ public class PrototypeTerrainGenerator : TerrainGenerator
     private static int BORDER_THICKNESS = 3;
     private static int FOREST_MIN_RADIUS = 6;
     private static int FOREST_MAX_RADIUS = 15;
-    private static Vector3 treeCenterer = new Vector3(0.5f, 0.3f, 0);
+
+    // TODO bad
+    private static Vector3 treeCenterer = new Vector3(0.5f, 0.5f, 0);
+    private static bool[][] isCollidable;
 
     public static SZoneState GenerateZone(long seed, Vector2Int zoneIndex)
     {
         int h = 64;
         int w = 64;
         SZoneState zs = new SZoneState(h, w, zoneIndex);
+        isCollidable = new bool[w][];
+
+        for (int i = 0; i < w; i++)
+        {
+            isCollidable[i] = new bool[h];
+        }
 
         // Generate base map
         for (int y = -BORDER_THICKNESS; y < h + BORDER_THICKNESS; y++)
@@ -86,6 +95,7 @@ public class PrototypeTerrainGenerator : TerrainGenerator
                     if (lr.NextDouble() > dist * dist)
                     {
                         zs.tileIDs[new SVector2Int(x, y)] = AssetLoader.GetTileID("bounds_tile");
+                        isCollidable[x][y] = true;
                     }
                 }
             }
@@ -141,6 +151,7 @@ public class PrototypeTerrainGenerator : TerrainGenerator
                     if (a1 / RIVER_THICKNESS < 0.7f || lr.NextDouble() > a1 / RIVER_THICKNESS)
                     {
                         zs.tileIDs[new SVector2Int(x, y)] = AssetLoader.GetTileID("bounds_tile");
+                        isCollidable[x][y] = true;
                     }
                 }
             }
@@ -192,6 +203,7 @@ public class PrototypeTerrainGenerator : TerrainGenerator
             Vector3Int tilePos = Util.ToVector3Int(point);
 
             zs.tileIDs[new SVector2Int(tilePos.x, tilePos.y)] = AssetLoader.GetTileID("bounds_tile");
+            isCollidable[tilePos.x][tilePos.y] = true;
 
             // TODO - change
             for (int x = -RIVER_BEZIER_WIDTH / 2; x < (RIVER_BEZIER_WIDTH + 1) / 2; x++)
@@ -200,26 +212,16 @@ public class PrototypeTerrainGenerator : TerrainGenerator
                 // baseTilemap.SetTile(tilePos + new Vector3Int(x, 0, 0), null);
 
                 zs.tileIDs[new SVector2Int(tilePos.x + x, tilePos.y)] = AssetLoader.GetTileID("bounds_tile");
+                try
+                {
+                    isCollidable[tilePos.x + x][tilePos.y] = true;
+                }
+                catch (Exception e)
+                {
+                    // Welp can't do much
+                }
             }
         }
-
-        /* BEZIER CURVE
-        Define a bezier curve
-        For every point, iterate at most 8? times using binary search to find the closest point in the curve 
-        Calculate the distance to P1 to P2
-        if it's less than threshold, delete tile
-
-        for tile in map:
-            t = 0.5
-            for i(1,8) times:
-                d1 = distance of tile.pos to bezier(t + 1/2.0^i)
-                d2 = distance of tile.pos to bezier(t - 1/2.0^i)
-                if d1 > d2, t += 1/2.0^i
-                else t -= 1/2.0^i
-
-            if distance of tile.pos bezier(t) < RIVER_THICKNESS
-                add tile to bounds
-        */
     }
 
     private static void GenerateTrees(System.Random lr, SZoneState zs, int h, int w)
@@ -301,7 +303,9 @@ public class PrototypeTerrainGenerator : TerrainGenerator
     {
         for (int i = 0; i < 8; i++)
         {
-            if (SceneReferences.boundsTilemap.HasTile(pos + new Vector3Int(Util.SURROUNDING_X[i], Util.SURROUNDING_Y[i], 0)))
+            int x = pos.x + Util.SURROUNDING_X[i];
+            int y = pos.y + Util.SURROUNDING_Y[i];
+            if (isCollidable[x][y])
                 return true;
         }
         return false;

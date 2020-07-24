@@ -6,6 +6,11 @@ using TMPro;
 public class UniverseDisplay : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI nameText;
+    private MainMenuManager mmm;
+    private void Awake()
+    {
+        mmm = GameObject.FindObjectOfType<MainMenuManager>();
+    }
     
     public void SetupDisplay(string name, Vector2 anchoredPos)
     {
@@ -15,5 +20,10 @@ public class UniverseDisplay : MonoBehaviour
         rt.localScale = Vector3.one;
         rt.offsetMin = new Vector2(0, rt.offsetMin.y);
         rt.offsetMax = new Vector2(0, anchoredPos.y);
+    }
+
+    public void PlayUniverse()
+    {
+        mmm.PlayWorld(nameText.text);
     }
 }

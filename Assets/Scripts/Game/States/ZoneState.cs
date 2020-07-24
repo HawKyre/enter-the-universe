@@ -103,7 +103,8 @@ public class ZoneState
         // Setting the entities TODO ples
         foreach (var e in zs.entityInfo)
         {
-            GameObject eG = GameEntity.GenerateGameEntity(e.entityID, new Vector3(e.pos.x, e.pos.y, e.pos.z));
+            Vector3 offset = AssetLoader.GetEntityData(e.entityID).positionOffset;
+            GameObject eG = GameEntity.GenerateGameEntity(e.entityID, new Vector3(e.pos.x, e.pos.y, e.pos.z) + offset);
             switch (e.entityType)
             {
                 case EntityType.BREAKABLE:
@@ -118,7 +119,7 @@ public class ZoneState
                 default:
                     throw new Exception();
             }
-            eG.transform.position = new Vector3(e.pos.x, e.pos.y, e.pos.z);
+            // eG.transform.position = new Vector3(e.pos.x, e.pos.y, e.pos.z);
         }
 
         // Setting the collectibles

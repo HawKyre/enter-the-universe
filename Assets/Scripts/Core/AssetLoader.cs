@@ -117,6 +117,8 @@ public static class AssetLoader
         entityInfoDict = new Dictionary<int, GameEntityData>();
         entityTagTranslator = new Dictionary<string, int>();
 
+        Debug.Log(entities[0].position_offset);
+
         foreach (var entity in entities)
         {
             GameEntityData eD = new GameEntityData();
@@ -125,6 +127,7 @@ public static class AssetLoader
             eD.type = (GameItemType) Enum.Parse(typeof(GameItemType), entity.type);
             if (eD.type == GameItemType.BREAKABLE)
             {
+                eD.positionOffset = new Vector3(entity.position_offset[0], entity.position_offset[1]);
                 eD.dropData = DropData.GetDropData(entity.drop);
                 eD.minPower = entity.min_power;
                 eD.hp = entity.hp;
@@ -262,6 +265,7 @@ public class JsonEntityData
     public string drop;
     public int hp;
     public int min_power;
+    public float[] position_offset;
 }
 
 public class GameEntityData
@@ -272,6 +276,7 @@ public class GameEntityData
     public DropData dropData;
     public int hp;
     public int minPower;
+    public Vector3 positionOffset; 
 
     public override string ToString()
     {
