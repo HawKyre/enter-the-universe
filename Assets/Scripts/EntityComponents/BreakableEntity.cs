@@ -38,7 +38,7 @@ public class BreakableEntity : MonoBehaviour
                 print("Trees drop " + drop.id);
                 // get the item info associated with each drop
                 GameObject collectible = GameEntity.GenerateGameEntity(drop.id, this.transform.position);
-                var ce = collectible.AddComponent<CollectableEntity>();
+                var ce = collectible.AddComponent<CollectibleEntity>();
 
                 print("This should be 2 or 3: " + drop.id);
                 ce.SetCollectible(new ItemStack(drop.id, 1));

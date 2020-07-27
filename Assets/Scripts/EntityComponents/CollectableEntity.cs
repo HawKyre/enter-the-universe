@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CollectableEntity : MonoBehaviour
+public class CollectibleEntity : MonoBehaviour
 {
     private CircleCollider2D collectTrigger;
     private Rigidbody2D rb2d;
@@ -36,7 +36,7 @@ public class CollectableEntity : MonoBehaviour
         rb2d.AddForce(force, ForceMode2D.Impulse);
     }
 
-    public void Merge(CollectableEntity c)
+    public void Merge(CollectibleEntity c)
     {
         throw new NotImplementedException();
     }
@@ -64,5 +64,10 @@ public class CollectableEntity : MonoBehaviour
     public void SetCollectible(ItemStack i)
     {
         itemStack = i;
+    }
+
+    public CollectibleInfo GetInfo()
+    {
+        return new CollectibleInfo(itemStack, this.transform.position);
     }
 }

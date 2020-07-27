@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
 
 public class ZoneState
 {
@@ -17,13 +18,13 @@ public class ZoneState
 
     private Dictionary<SVector2Int, int> tileIDs;
     private GameObject[][] mapEntities;
-    private List<CollectableEntity> mapItems;
+    private List<CollectibleEntity> mapItems;
     private int height;
     private int width;
     private SVector2Int currentZone;
 
     public GameObject[][] MapEntities { get => mapEntities; set => mapEntities = value; }
-    public List<CollectableEntity> MapItems { get => mapItems; set => mapItems = value; }
+    public List<CollectibleEntity> MapItems { get => mapItems; set => mapItems = value; }
     public int Height { get => height; set => height = value; }
     public int Width { get => width; set => width = value; }
     public SVector2Int CurrentZone { get => currentZone; set => currentZone = value; }
@@ -44,7 +45,7 @@ public class ZoneState
             // Tiles[i] = new int[height];
         }
 
-        MapItems = new List<CollectableEntity>();
+        MapItems = new List<CollectibleEntity>();
         TileIDs = new Dictionary<SVector2Int, int>();
 
         LoadToScene(zs);
@@ -68,7 +69,7 @@ public class ZoneState
         }
     }
 
-    public void AddItem(CollectableEntity i)
+    public void AddItem(CollectibleEntity i)
     {
         MapItems.Add(i);
     }
@@ -126,8 +127,16 @@ public class ZoneState
         foreach (var c in zs.collectibleInfo)
         {
             GameObject collectible = GameEntity.GenerateGameEntity(c.id, c.pos);
-            var ce = collectible.AddComponent<CollectableEntity>();
+            var ce = collectible.AddComponent<CollectibleEntity>();
             ce.SetCollectible(c.itemStack);
         }
+    }
+
+    public SZoneState Serialize()
+    {
+        SZoneState sz = new SZoneState(height, width, currentZone);
+        sz.collectibleInfo = mapItems.Select(x => x.GetInfo()).ToList();
+        sz.tileIDs = this.tileIDs;
+        sz.entityInfo = ?;
     }
 }

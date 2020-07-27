@@ -143,5 +143,6 @@ public class GameState : MonoBehaviour
         }
 
         GameObject.FindGameObjectWithTag("Player").transform.position = spawnPos;
+        playerState.position = spawnPos;
     }
 }

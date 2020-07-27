@@ -1,9 +1,11 @@
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using UnityEngine;
 
 public class SZoneState
 {
     public Dictionary<SVector2Int, int> tileIDs;
+
     public List<GameObjectInfo> entityInfo;
     public List<CollectibleInfo> collectibleInfo;
     public int height;
@@ -27,14 +29,19 @@ public class GameObjectInfo
 {
     public int entityID;
     public SVector3Int pos;
-
     public EntityType entityType;
+
+
 }
 
 public class CollectibleInfo
 {
-    public int id;
     public ItemStack itemStack;
-
     public SVector3 pos;
+
+    public CollectibleInfo(ItemStack item, Vector3 pos)
+    {
+        itemStack = item;
+        this.pos = pos;
+    }
 }
