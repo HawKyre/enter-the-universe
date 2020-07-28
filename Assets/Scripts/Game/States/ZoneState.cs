@@ -17,18 +17,21 @@ public class ZoneState
     */
 
     private Dictionary<SVector2Int, int> tileIDs;
-    private GameObject[][] mapEntities;
+    private List<EntityContainer> mapEntities;
     private List<CollectibleEntity> mapItems;
     private int height;
     private int width;
     private SVector2Int currentZone;
 
-    public GameObject[][] MapEntities { get => mapEntities; set => mapEntities = value; }
+    private SZoneState serializedZoneState;
+
+
     public List<CollectibleEntity> MapItems { get => mapItems; set => mapItems = value; }
     public int Height { get => height; set => height = value; }
     public int Width { get => width; set => width = value; }
     public SVector2Int CurrentZone { get => currentZone; set => currentZone = value; }
     public Dictionary<SVector2Int, int> TileIDs { get => tileIDs; set => tileIDs = value; }
+    public List<EntityContainer> MapEntities { get => mapEntities; set => mapEntities = value; }
 
     public ZoneState(SZoneState zs)
     {
@@ -36,36 +39,37 @@ public class ZoneState
         this.Width = zs.width;
         this.CurrentZone = zs.zoneIndex;
 
-        MapEntities = new GameObject[width][];
+        MapEntities = new List<EntityContainer>();
         // Tiles = new int[width][];
-
-        for (int i = 0; i < width; i++)
-        {
-            MapEntities[i] = new GameObject[height];
-            // Tiles[i] = new int[height];
-        }
 
         MapItems = new List<CollectibleEntity>();
         TileIDs = new Dictionary<SVector2Int, int>();
 
+        serializedZoneState = zs;
+
         LoadToScene(zs);
     }
 
-    public void AddEntity(Vector2Int pos, GameObject e)
+    public void AddEntity(GameObject e, Vector2Int pos, EntityType type, int id)
     {
         // TODO - CHECK
         // Overrides the current block
-        MapEntities[pos.x][pos.y] = e;
+        // MapEntities[pos.x][pos.y] = e;
+        MapEntities.Add(new EntityContainer(e, pos, type, id));
     }
 
     public void DestroyEntity(Vector2Int pos)
     {
-        var g = MapEntities[pos.x][pos.y];
-        if (g != null)
+        int g_ix = mapEntities.FindIndex(x => x.position == pos);
+        if (g_ix != -1 && mapEntities[g_ix].type == EntityType.BREAKABLE)
         {
-            var be = g.GetComponent<BreakableEntity>();
+            var be = mapEntities[g_ix].gameObject.GetComponent<BreakableEntity>();
             be.Break();
-            MapEntities[pos.x][pos.y] = null;
+            mapEntities.RemoveAt(g_ix);
+        }
+        else
+        {
+            throw new Exception("Can't destroy this object or there's no object at this position");
         }
     }
 
@@ -110,7 +114,7 @@ public class ZoneState
             {
                 case EntityType.BREAKABLE:
                     eG.AddComponent<BreakableEntity>();
-                    this.AddEntity(new Vector2Int(e.pos.x, e.pos.y), eG);
+                    this.AddEntity(eG, new Vector2Int(e.pos.x, e.pos.y), EntityType.BREAKABLE, e.entityID);
 
                     break;
 
@@ -126,7 +130,7 @@ public class ZoneState
         // Setting the collectibles
         foreach (var c in zs.collectibleInfo)
         {
-            GameObject collectible = GameEntity.GenerateGameEntity(c.id, c.pos);
+            GameObject collectible = GameEntity.GenerateGameEntity(c.itemStack.ID, c.pos);
             var ce = collectible.AddComponent<CollectibleEntity>();
             ce.SetCollectible(c.itemStack);
         }
@@ -137,6 +141,37 @@ public class ZoneState
         SZoneState sz = new SZoneState(height, width, currentZone);
         sz.collectibleInfo = mapItems.Select(x => x.GetInfo()).ToList();
         sz.tileIDs = this.tileIDs;
-        sz.entityInfo = ?;
+        sz.entityInfo = new List<GameObjectInfo>();
+        foreach (var e in MapEntities)
+        {
+            sz.entityInfo.Add(e.GetInfo());
+        }
+
+        return sz;
+    }
+}
+
+public struct EntityContainer
+{
+    public GameObject gameObject;
+    public SVector2Int position;
+    public EntityType type;
+    public int ID;
+
+    public EntityContainer(GameObject gameObject, SVector2Int position, EntityType type, int iD)
+    {
+        this.gameObject = gameObject;
+        this.position = position;
+        this.type = type;
+        ID = iD;
+    }
+
+    public GameObjectInfo GetInfo()
+    {
+        GameObjectInfo i = new GameObjectInfo();
+        i.entityID = this.ID;
+        i.entityType = this.type;
+        i.pos = new SVector3Int(this.position.x, this.position.y, 0);
+        return i;
     }
 }

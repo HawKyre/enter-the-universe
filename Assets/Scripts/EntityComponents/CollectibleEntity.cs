@@ -66,6 +66,11 @@ public class CollectibleEntity : MonoBehaviour
         itemStack = i;
     }
 
+    public int GetCollectibleID()
+    {
+        return itemStack.ID;
+    }
+
     public CollectibleInfo GetInfo()
     {
         return new CollectibleInfo(itemStack, this.transform.position);

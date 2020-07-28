@@ -1,6 +1,8 @@
 
 // Asynchronously writes the file periodically to keep the latest progress saved
 using System;
+using System.IO;
+using Newtonsoft.Json;
 
 public class StateUpdater
 {
@@ -16,18 +18,21 @@ public class StateUpdater
         WriteZoneData();
     }
 
-    private static void WriteZoneData()
+    private static async void WriteZoneData()
     {
-        throw new NotImplementedException();
+        SZoneState currentZoneState = GameState.GetInstance()._ZoneState.Serialize();
+        string zoneDat = JsonConvert.SerializeObject(currentZoneState);
+        // Write async
     }
 
-    private static void WritePlayerData()
+    private static async void WritePlayerData()
     {
-        throw new NotImplementedException();
+        string playerDat = JsonConvert.SerializeObject(GameState.GetInstance()._PlayerState);
+        // Write async
     }
 
-    private static void WriteUnivData()
+    private static async void WriteUnivData()
     {
-        SZoneState currentZoneState = 
+        
     }
 }

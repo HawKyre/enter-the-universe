@@ -30,8 +30,6 @@ public class GameObjectInfo
     public int entityID;
     public SVector3Int pos;
     public EntityType entityType;
-
-
 }
 
 public class CollectibleInfo

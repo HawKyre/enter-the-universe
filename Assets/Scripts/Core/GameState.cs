@@ -144,5 +144,7 @@ public class GameState : MonoBehaviour
 
         GameObject.FindGameObjectWithTag("Player").transform.position = spawnPos;
         playerState.position = spawnPos;
+        
+        // TODO - save the new position in the player dat file
     }
 }

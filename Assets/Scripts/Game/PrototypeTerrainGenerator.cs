@@ -64,9 +64,6 @@ public class PrototypeTerrainGenerator : TerrainGenerator
         // Generate trees
         GenerateTrees(r, zs, h, w);
 
-        // TODO Maybe we need this
-        // baseTilemap.RefreshAllTiles();
-
         return zs;
     }
 
