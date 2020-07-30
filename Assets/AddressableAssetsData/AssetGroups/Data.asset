@@ -10,39 +10,45 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
-  m_Name: Default Local Group
+  m_Name: Data
   m_EditorClassIdentifier: 
-  m_GroupName: Default Local Group
+  m_GroupName: Data
   m_Data:
     m_SerializedData: []
-  m_GUID: 5948044cfc8250a4eae64b08785a5bee
+  m_GUID: 46c9686d447b656468ce23f8d02d8f33
   m_SerializeEntries:
-  - m_GUID: 55766f63d2d1c994cbfb59ea29202fb5
-    m_Address: Assets/data
+  - m_GUID: 22fa8ca2cab5c19499bce7e7bd9fef55
+    m_Address: Assets/data/entitydata.txt
     m_ReadOnly: 0
     m_SerializedLabels: []
     m_MainAsset: {fileID: 0}
     m_TargetAsset: {fileID: 0}
-  - m_GUID: ca02be713aa8b45458da34d71232c4c8
-    m_Address: Assets/data/tiles/groundTile.asset
+  - m_GUID: 358c7aaeb1d82db46be0cc5774315d2f
+    m_Address: Assets/data/textures/prototypeStick.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     m_MainAsset: {fileID: 0}
     m_TargetAsset: {fileID: 0}
-  - m_GUID: cea70adfc089d7941826fbd6120dc7e1
-    m_Address: Assets/data/Textures
+  - m_GUID: 731e3c5354538eb44b488138445ff46d
+    m_Address: Assets/data/entityModels/portal.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     m_MainAsset: {fileID: 0}
     m_TargetAsset: {fileID: 0}
-  - m_GUID: f45693e8f4273a34d938e93924b75678
-    m_Address: Assets/data/entitydata.json
+  - m_GUID: 734c6d1ac8f4f914c9edccb47220cf3f
+    m_Address: Assets/data/itemdata.txt
     m_ReadOnly: 0
     m_SerializedLabels: []
     m_MainAsset: {fileID: 0}
     m_TargetAsset: {fileID: 0}
-  - m_GUID: f753925034e24b74a9297a5211a25ff7
-    m_Address: Assets/data/tiles/boundsTile.asset
+  - m_GUID: c2a35c834738fee409732c0034104614
+    m_Address: Assets/data/prefabs/itemPrefab.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    m_MainAsset: {fileID: 0}
+    m_TargetAsset: {fileID: 0}
+  - m_GUID: d9ed534910fa12f41b7efa3de3bb39cc
+    m_Address: Assets/data/tiledata.txt
     m_ReadOnly: 0
     m_SerializedLabels: []
     m_MainAsset: {fileID: 0}
@@ -51,5 +57,5 @@ MonoBehaviour:
   m_Settings: {fileID: 11400000, guid: 1c4ea4b78f833aa48a2c8e74268f58fb, type: 2}
   m_SchemaSet:
     m_Schemas:
-    - {fileID: 11400000, guid: 6d4aaca316084694281c37c5c2ff8fb4, type: 2}
-    - {fileID: 11400000, guid: 33588315b53ed884a8b60a35e4817fa6, type: 2}
+    - {fileID: 11400000, guid: 3e367ffa912f11949bf0fcf91a20e7ef, type: 2}
+    - {fileID: 11400000, guid: b2e2017ad29bfbd42b13211f8288b489, type: 2}

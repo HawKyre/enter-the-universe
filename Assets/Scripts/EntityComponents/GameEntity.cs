@@ -10,22 +10,31 @@ public class GameEntity : MonoBehaviour
 
     public static GameObject GenerateGameEntity(int entityID, Vector3 gameEntityPos)
     {
-        GameEntityData gameItemData = AssetLoader.GetData(entityID);
+        GameEntityData gameItemData = AssetLoader.GetEntityData(entityID);
 
         if (gameItemData != null)
         {
-            var g = GameObject.Instantiate(GameState.GetInstance()._DefaultEntity, gameEntityPos, Quaternion.identity);
-            var ge = g.AddComponent<GameEntity>();
-            ge.ID = entityID;
+            var g = GameObject.Instantiate(gameItemData.gameObject, gameEntityPos, Quaternion.identity);
+            return g;
+        }
+        else
+        {
+            throw new ArgumentException();
+        }
+    }
+
+    public static GameObject GenerateGameItem(int itemID, Vector3 pos, ItemStack stack)
+    {
+        GameItemData gameItemData = AssetLoader.GetItemData(itemID);
+
+        if (gameItemData != null)
+        {
+            var g = GameObject.Instantiate(AssetLoader.itemPrefab, pos, Quaternion.identity);
             
-            g.name = "Entity ID [" + entityID + "]";
-            g.GetComponent<SpriteRenderer>().sprite = gameItemData.sprite;
+            g.GetComponent<SpriteRenderer>().sprite = AssetLoader.GetItemData(itemID).sprite;
 
-            print("POS: : : " + gameEntityPos);
-            // g.transform.position = gameEntityPos;
-
-            print(g.transform.position);
-
+            var cEntity = g.GetComponent<CollectibleEntity>();
+            cEntity.SetCollectible(stack);
             return g;
         }
         else

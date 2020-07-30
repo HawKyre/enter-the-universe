@@ -21,17 +21,18 @@ public class ZoneState
     private List<CollectibleEntity> mapItems;
     private int height;
     private int width;
-    private SVector2Int currentZone;
+    private SVector3Int currentZone;
+    private List<PortalInfo> portalInfo;
 
     private SZoneState serializedZoneState;
-
 
     public List<CollectibleEntity> MapItems { get => mapItems; set => mapItems = value; }
     public int Height { get => height; set => height = value; }
     public int Width { get => width; set => width = value; }
-    public SVector2Int CurrentZone { get => currentZone; set => currentZone = value; }
+    public SVector3Int CurrentZone { get => currentZone; set => currentZone = value; }
     public Dictionary<SVector2Int, int> TileIDs { get => tileIDs; set => tileIDs = value; }
     public List<EntityContainer> MapEntities { get => mapEntities; set => mapEntities = value; }
+    public List<PortalInfo> PortalInfo { get => portalInfo; set => portalInfo = value; }
 
     public ZoneState(SZoneState zs)
     {
@@ -40,10 +41,9 @@ public class ZoneState
         this.CurrentZone = zs.zoneIndex;
 
         MapEntities = new List<EntityContainer>();
-        // Tiles = new int[width][];
 
         MapItems = new List<CollectibleEntity>();
-        TileIDs = new Dictionary<SVector2Int, int>();
+        TileIDs = zs.tileIDs;
 
         serializedZoneState = zs;
 
@@ -61,7 +61,7 @@ public class ZoneState
     public void DestroyEntity(Vector2Int pos)
     {
         int g_ix = mapEntities.FindIndex(x => x.position == pos);
-        if (g_ix != -1 && mapEntities[g_ix].type == EntityType.BREAKABLE)
+        if (g_ix != -1 && (mapEntities[g_ix].type & EntityType.BREAKABLE) == EntityType.BREAKABLE)
         {
             var be = mapEntities[g_ix].gameObject.GetComponent<BreakableEntity>();
             be.Break();
@@ -69,7 +69,7 @@ public class ZoneState
         }
         else
         {
-            throw new Exception("Can't destroy this object or there's no object at this position");
+            // throw new Exception("Can't destroy this object or there's no object at this position");
         }
     }
 
@@ -77,6 +77,11 @@ public class ZoneState
     {
         MapItems.Add(i);
     }
+
+    public void RemoveItem(CollectibleEntity i)
+    {
+        MapItems.Remove(i);
+    } 
 
     public void ChangeTile(int newTileID, Vector2Int newTilePos)
     {
@@ -86,12 +91,13 @@ public class ZoneState
 
     public void LoadToScene(SZoneState zs)
     {
+        Debug.Log(zs.tileIDs.Count);
         // Setting the tilemap
         for (int x = -1; x <= width; x++)
         {
             for (int y = -1; y <= height; y++)
             {
-                Debug.Log($"({x},{y})");
+                // Debug.Log($"({x},{y})");
                 var tileInfo = AssetLoader.GetTileData(zs.tileIDs[new Vector2Int(x, y)]);
 
                 if (tileInfo.collidable)
@@ -108,32 +114,28 @@ public class ZoneState
         // Setting the entities TODO ples
         foreach (var e in zs.entityInfo)
         {
-            Vector3 offset = AssetLoader.GetEntityData(e.entityID).positionOffset;
-            GameObject eG = GameEntity.GenerateGameEntity(e.entityID, new Vector3(e.pos.x, e.pos.y, e.pos.z) + offset);
-            switch (e.entityType)
-            {
-                case EntityType.BREAKABLE:
-                    eG.AddComponent<BreakableEntity>();
-                    this.AddEntity(eG, new Vector2Int(e.pos.x, e.pos.y), EntityType.BREAKABLE, e.entityID);
+            GameObject eG = GameEntity.GenerateGameEntity(e.entityID, new Vector3(e.pos.x, e.pos.y, e.pos.z));
+            this.AddEntity(eG.transform.GetChild(0).gameObject, new Vector2Int(e.pos.x, e.pos.y), e.entityType, e.entityID);
+        }
 
-                    break;
+        // Adding the portals
+        foreach (var p in zs.portalInfo)
+        {
+            GameObject eG = GameEntity.GenerateGameEntity(p.entityInfo.entityID, new Vector3(p.entityInfo.pos.x, p.entityInfo.pos.y, p.entityInfo.pos.z));
+            var portalComponent = eG.transform.GetChild(0).GetComponent<PortalEntity>();
 
-                case EntityType.STATIC:
-                    throw new NotImplementedException();
-
-                default:
-                    throw new Exception();
-            }
-            // eG.transform.position = new Vector3(e.pos.x, e.pos.y, e.pos.z);
+            portalComponent.NextZone = p.nextZone;
+            portalComponent.PortalDirection = p.directionToGo;
         }
 
         // Setting the collectibles
         foreach (var c in zs.collectibleInfo)
         {
-            GameObject collectible = GameEntity.GenerateGameEntity(c.itemStack.ID, c.pos);
-            var ce = collectible.AddComponent<CollectibleEntity>();
-            ce.SetCollectible(c.itemStack);
+            GameObject collectible = GameEntity.GenerateGameItem(c.itemStack.id, c.pos, c.itemStack);
+
+            this.AddItem(collectible.GetComponent<CollectibleEntity>());
         }
+
     }
 
     public SZoneState Serialize()
@@ -141,7 +143,10 @@ public class ZoneState
         SZoneState sz = new SZoneState(height, width, currentZone);
         sz.collectibleInfo = mapItems.Select(x => x.GetInfo()).ToList();
         sz.tileIDs = this.tileIDs;
-        sz.entityInfo = new List<GameObjectInfo>();
+
+        // TODO - Add portal info parsing
+        sz.portalInfo = portalInfo;
+
         foreach (var e in MapEntities)
         {
             sz.entityInfo.Add(e.GetInfo());
@@ -166,9 +171,9 @@ public struct EntityContainer
         ID = iD;
     }
 
-    public GameObjectInfo GetInfo()
+    public GameEntityInfo GetInfo()
     {
-        GameObjectInfo i = new GameObjectInfo();
+        GameEntityInfo i = new GameEntityInfo();
         i.entityID = this.ID;
         i.entityType = this.type;
         i.pos = new SVector3Int(this.position.x, this.position.y, 0);

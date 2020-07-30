@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 468a46d0ae32c3544b7d98094e6448a9, type: 3}
   m_Name: AddressableAssetSettings
   m_EditorClassIdentifier: 
-  m_DefaultGroup: 5948044cfc8250a4eae64b08785a5bee
+  m_DefaultGroup: 46c9686d447b656468ce23f8d02d8f33
   m_BuildRemoteCatalog: 0
   m_BundleLocalCatalog: 0
   m_DisableCatalogUpdateOnStart: 0
@@ -24,8 +24,10 @@ MonoBehaviour:
   m_overridePlayerVersion: 
   m_GroupAssets:
   - {fileID: 11400000, guid: c4af18e9c52cbbd4691df3cf44de49e6, type: 2}
-  - {fileID: 11400000, guid: 05f889a0e51195b44b33441abbc370e9, type: 2}
-  - {fileID: 11400000, guid: e03525fc6d118a2408a56038eeb00043, type: 2}
+  - {fileID: 11400000, guid: 09213e9af4ed5784999ea14923391f30, type: 2}
+  - {fileID: 11400000, guid: 5ddd2934c96e0a54c925d7ba723569dc, type: 2}
+  - {fileID: 11400000, guid: 7feedfe78faae5344942859ad7ec4b81, type: 2}
+  - {fileID: 11400000, guid: b4fc6fc3d0803fc4784a515c37ec0011, type: 2}
   m_BuildSettings:
     m_CompileScriptsInVirtualMode: 0
     m_CleanupStreamingAssetsAfterBuilds: 1
@@ -67,6 +69,9 @@ MonoBehaviour:
   m_LabelTable:
     m_LabelNames:
     - default
+    - entity
+    - tile
+    - item
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: b94c69414dae23d43bc826243a8c957a, type: 2}

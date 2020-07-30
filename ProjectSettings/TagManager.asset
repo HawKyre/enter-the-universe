@@ -6,6 +6,7 @@ TagManager:
   tags:
   - boundsTilemap
   - baseTilemap
+  - CameraConfiner
   layers:
   - Default
   - TransparentFX

@@ -6,34 +6,99 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine.AddressableAssets;
+using System.Linq;
+using System.Threading.Tasks;
 
 public static class AssetLoader
 {
     public static bool dataLoaded = false;
 
-    // public static string dataPath = "./data/entitydata.json";
-    // public static string texturesPath = "Assets/Textures";
     public static string addrDataPath = "Assets/data";
-    public static string addrTexturePath = "Assets/data/textures";
+    public static string addrEntityPath = "Assets/data/entityModels";
+    public static string addrItemPath = "Assets/data/textures";
     public static string addrTilePath = "Assets/data/tiles";
+    public static string addrPrefabPath = "Assets/data/prefabs";
 
+    private static Dictionary<int, GameItemData> itemInfoDict;
     private static Dictionary<int, GameEntityData> entityInfoDict;
     private static Dictionary<int, GameTileData> tileInfoDict;
 
+    private static Dictionary<string, int> itemTagTranslator;
     private static Dictionary<string, int> entityTagTranslator;
     private static Dictionary<string, int> tileTagTranslator;
 
-    public static void LoadGameData()
-    {
-        // TODO - still it can probably be improved
-        LoadEntityData();
-        LoadTileData();
+    public static GameObject itemPrefab;
 
+    public static async void LoadGameData()
+    {
+        await Addressables.InitializeAsync().Task;
+
+        List<Task> loadOps = new List<Task>();
+
+        // TODO - I'm quite happy with this ngl
+        loadOps.Add(LoadEntityData());
+        loadOps.Add(LoadItemData());
+        loadOps.Add(LoadTileData());
+        loadOps.Add(LoadItemPrefab());
+
+        await Task.WhenAll(loadOps);
         dataLoaded = true;
 
         Debug.Log("LOADED");
     }
 
+    private static async Task LoadItemPrefab()
+    {
+        itemPrefab = await Addressables.LoadAssetAsync<GameObject>($"{addrPrefabPath}/itemPrefab.prefab").Task;
+    }
+
+    private static async Task LoadItemData()
+    {
+        var gameData = await Addressables.LoadAssetAsync<TextAsset>($"{addrDataPath}/itemdata.txt").Task;
+        List<GameItemData> entityData = DataDecoder.DecodeItemData(gameData.text);
+
+        itemInfoDict = entityData.ToDictionary(x => x.ID);
+        itemTagTranslator = entityData.ToDictionary(x => x.name, x => x.ID);
+
+        foreach (var item in itemInfoDict)
+        {
+            item.Value.sprite = await Addressables.LoadAssetAsync<Sprite>($"{addrItemPath}/{item.Value.name}.png").Task;
+            if (item.Value.sprite != null)
+            {
+                Debug.Log("I could load " + item.Value.name);
+            }
+        }
+    }
+
+    private static async Task LoadTileData()
+    {
+        var gameData = await Addressables.LoadAssetAsync<TextAsset>($"{addrDataPath}/tiledata.txt").Task;
+        List<GameTileData> tilesData = DataDecoder.DecodeTileData(gameData.text);
+
+        tileInfoDict = tilesData.ToDictionary(x => x.ID);
+        tileTagTranslator = tilesData.ToDictionary(x => x.name, x => x.ID);
+
+        foreach (var tileData in tileInfoDict)
+        {
+            tileData.Value.tile = await Addressables.LoadAssetAsync<RuleTile>($"{addrTilePath}/{tileData.Value.name}.asset").Task;
+        }
+    }
+
+    private static async Task LoadEntityData()
+    {
+        var gameData = await Addressables.LoadAssetAsync<TextAsset>($"{addrDataPath}/entitydata.txt").Task;
+        List<GameEntityData> entityData = DataDecoder.DecodeEntityData(gameData.text);
+
+        entityInfoDict = entityData.ToDictionary(x => x.ID);
+        entityTagTranslator = entityData.ToDictionary(x => x.name, x => x.ID);
+
+        foreach (var entity in entityInfoDict)
+        {
+            entity.Value.gameObject = await Addressables.LoadAssetAsync<GameObject>($"{addrEntityPath}/{Util.SnakeToCamel(entity.Value.name)}.prefab").Task;
+        }
+    }
+
+    
     public static GameEntityData GetEntityData(string entityTag)
     {
         if (!entityTagTranslator.ContainsKey(entityTag))
@@ -50,6 +115,15 @@ public static class AssetLoader
             throw new NullReferenceException("Attemped to index by " + entityID);
         }
         return entityInfoDict[entityID];
+    }
+
+    public static int GetEntityID(string entityTag)
+    {
+        if (!entityTagTranslator.ContainsKey(entityTag))
+        {
+            throw new NullReferenceException("Tried to access string " + entityTag + " but no value was found");
+        }
+        return entityTagTranslator[entityTag];
     }
 
     public static GameTileData GetTileData(string tileTag)
@@ -78,89 +152,37 @@ public static class AssetLoader
         }
         return tileTagTranslator[v];
     }
-    public static int GetEntityID(string entityTag)
+
+    public static GameItemData GetItemData(string itemTag)
     {
-        if (!entityTagTranslator.ContainsKey(entityTag))
+        if (!itemTagTranslator.ContainsKey(itemTag))
         {
-            throw new NullReferenceException("Tried to access string " + entityTag + " but no value was found");
+            throw new NullReferenceException("Attemped to index by " + itemTag);
         }
-        return entityTagTranslator[entityTag];
+        return itemInfoDict[itemTagTranslator[itemTag]];
     }
 
-    private static async void LoadTileData()
+    public static GameItemData GetItemData(int itemID)
     {
-        var gameData = await Addressables.LoadAssetAsync<TextAsset>($"{addrDataPath}/tiledata.json").Task;
-        var tiles = JsonConvert.DeserializeObject<JsonTileData[]>(gameData.text);
-
-        tileInfoDict = new Dictionary<int, GameTileData>();
-        tileTagTranslator = new Dictionary<string, int>();
-
-
-        foreach (var tile in tiles)
+        if (!itemInfoDict.ContainsKey(itemID))
         {
-            Debug.Log("TL " + tile.name + " at path " + $"{addrTilePath}/{Util.SnakeToCamel(tile.name)}.asset" );
-            GameTileData tD = new GameTileData();
-            tD.collidable = tile.collidable;
-            tD.tile = await Addressables.LoadAssetAsync<RuleTile>($"{addrTilePath}/{Util.SnakeToCamel(tile.name)}.asset").Task;
-
-            tileInfoDict.Add(tile.id, tD);
-            Debug.Log($"ADDING TILE {tile.name}");
-            tileTagTranslator.Add(tile.name, tile.id);
+            throw new NullReferenceException("Attemped to index by " + itemID);
         }
+        return itemInfoDict[itemID];
     }
 
-    private static async void LoadEntityData()
+    public static int GetItemID(string v)
     {
-        var gameData = await Addressables.LoadAssetAsync<TextAsset>($"{addrDataPath}/entitydata.json").Task;
-        var entities = JsonConvert.DeserializeObject<JsonEntityData[]>(gameData.text);
-
-        entityInfoDict = new Dictionary<int, GameEntityData>();
-        entityTagTranslator = new Dictionary<string, int>();
-
-        Debug.Log(entities[0].position_offset);
-
-        foreach (var entity in entities)
+        if (!itemTagTranslator.ContainsKey(v))
         {
-            GameEntityData eD = new GameEntityData();
-
-            eD.name = entity.name;
-            eD.type = (GameItemType) Enum.Parse(typeof(GameItemType), entity.type);
-            if (eD.type == GameItemType.BREAKABLE)
-            {
-                eD.positionOffset = new Vector3(entity.position_offset[0], entity.position_offset[1]);
-                eD.dropData = DropData.GetDropData(entity.drop);
-                eD.minPower = entity.min_power;
-                eD.hp = entity.hp;
-            }
-            
-            Debug.Log("Accessing " + $"{addrTexturePath}/{Util.SnakeToCamel(eD.name)}.png");
-            Sprite s = await Addressables.LoadAssetAsync<Sprite>($"{addrTexturePath}/{Util.SnakeToCamel(eD.name)}.png").Task;
-
-            eD.sprite = s;
-
-            entityInfoDict.Add(entity.id, eD);
-            entityTagTranslator.Add(entity.name, entity.id);
+            throw new NullReferenceException("Tried to access string " + v + " but no value was found");
         }
-    }
-
-
-    public static GameEntityData GetData(int id)
-    {
-        GameEntityData data;
-        entityInfoDict.TryGetValue(id, out data);
-
-        Debug.Log($"Retrieving data for ID {id}: {data.ToString()}");
-
-        if (data != null)
-        {
-            return entityInfoDict[id];
-        }
-
-        return null;
+        return itemTagTranslator[v];
     }
 
 }
 
+[System.Serializable]
 public class ItemDropData
 {
     public int id;
@@ -198,14 +220,7 @@ public class ItemDropData
 
 public class DropData
 {
-    public List<ItemDropData> dropDataList;
-
-    public DropData(List<ItemDropData> dropData)
-    {
-        dropDataList = dropData;
-    }
-
-    public static DropData GetDropData(string dropString)
+    public static List<ItemDropData> GetDropData(string dropString)
     {
         List<ItemDropData> dropData = new List<ItemDropData>();
 
@@ -219,8 +234,6 @@ public class DropData
             dData.id = id;
             dData.probability = 1;
 
-            Debug.Log($"Adding drop with id {id} for string {dropString}");
-
             string[] iAttributes = iData[1].Split('&');
             foreach (var attr in iAttributes)
             {
@@ -228,7 +241,6 @@ public class DropData
                 {
                     // probability attribute
                     dData.probability = float.Parse(attr.Replace('%', ' '));
-                    Debug.Log(dData.probability);
                 }
                 else if (attr[0] == 'c')
                 {
@@ -237,7 +249,6 @@ public class DropData
                     if (!attr.Contains(","))
                     {
                         dData.hasRange = false;
-                        Debug.Log("WERRR"  +attr);
                         dData.fixedDropCount = int.Parse(attr.Replace('c', ' '));
 
                     }
@@ -253,56 +264,35 @@ public class DropData
             dropData.Add(dData);
         }
 
-        return new DropData(dropData);
+        return dropData;
     }
+
+    
 }
 
-public class JsonEntityData
+public class GameItemData
 {
-    public int id;
+    public int ID;
     public string name;
-    public string type;
-    public string drop;
-    public int hp;
-    public int min_power;
-    public float[] position_offset;
+    public Sprite sprite;
 }
 
 public class GameEntityData
 {
-    public Sprite sprite;
+    public int ID;
     public string name;
-    public GameItemType type;
-    public DropData dropData;
-    public int hp;
-    public int minPower;
-    public Vector3 positionOffset; 
+    public GameObject gameObject;
 
     public override string ToString()
     {
-        return $"{name} / {type.ToString()}";
+        return $"{name} / Entity";
     }
-}
-
-public class JsonTileData
-{
-    public int id;
-    public string name;
-    public bool collidable;
 }
 
 public class GameTileData
 {
-    public RuleTile tile;
+    public int ID;
     public string name;
+    public RuleTile tile;
     public bool collidable;
-}
-
-public enum GameItemType
-{
-    TILE,
-    ITEM,
-    BREAKABLE,
-    LIVING,
-    STRUCTURE
 }

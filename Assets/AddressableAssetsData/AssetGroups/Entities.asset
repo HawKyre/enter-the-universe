@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Entities
+  m_EditorClassIdentifier: 
+  m_GroupName: Entities
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 8349ff8eb36c2fd4583caf7bd380c30d
+  m_SerializeEntries:
+  - m_GUID: d8856fe98ad45304fb742f0941f86c8d
+    m_Address: Assets/data/entityModels/prototypeTree.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - entity
+    m_MainAsset: {fileID: 0}
+    m_TargetAsset: {fileID: 0}
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 1c4ea4b78f833aa48a2c8e74268f58fb, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 25d2ed6a4ef197e488516008f9a457ae, type: 2}
+    - {fileID: 11400000, guid: d3dab33acf2bea44bb1e47a9d3e2d01f, type: 2}

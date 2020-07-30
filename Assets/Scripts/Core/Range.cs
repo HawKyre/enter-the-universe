@@ -1,3 +1,4 @@
+[System.Serializable]
 public class Range
 {
     private int min;

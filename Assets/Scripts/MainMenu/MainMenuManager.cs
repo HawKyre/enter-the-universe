@@ -7,6 +7,7 @@ using TMPro;
 using System.Security.Cryptography;
 using System;
 using Newtonsoft.Json;
+using System.Text;
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -109,14 +110,14 @@ public class MainMenuManager : MonoBehaviour
 
         string univDat = JsonConvert.SerializeObject(uData);
 
-        File.WriteAllText(univDataPath, univDat);
+        File.WriteAllText(univDataPath, univDat, Encoding.UTF8);
 
         // player.dat setup
-        PlayerState playerState = new PlayerState(new Inventory(), Vector3.zero);
+        PlayerState playerState = new PlayerState(new Inventory(), Vector3.zero, true);
 
         string playerDat = JsonConvert.SerializeObject(playerState);
 
-        File.WriteAllText(playerDataPath, playerDat);
+        File.WriteAllText(playerDataPath, playerDat, Encoding.UTF8);
 
         PlayerPrefs.SetString("univPath", newUnivPath);
 

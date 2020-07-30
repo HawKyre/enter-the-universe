@@ -1,19 +1,18 @@
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+[Serializable]
 public class ItemStack
 {
-    private int _id;
-    private int _count;
-
-    public int ID { get => _id; set => _id = value; }
-    public int Count { get => _count; set => _count = value; }
+    public int id;
+    public int count;
 
     public ItemStack(int id, int count)
     {
-        this.ID = id;
-        this.Count = count;
+        this.id = id;
+        this.count = count;
     }
 }

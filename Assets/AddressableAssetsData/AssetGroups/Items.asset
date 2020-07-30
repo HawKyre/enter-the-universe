@@ -10,34 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
-  m_Name: TestGroup
+  m_Name: Items
   m_EditorClassIdentifier: 
-  m_GroupName: TestGroup
+  m_GroupName: Items
   m_Data:
     m_SerializedData: []
-  m_GUID: 742ef42160c89e3488506e4bf3b89738
+  m_GUID: 4f8934b1664453841a1f99dc5a884bcf
   m_SerializeEntries:
-  - m_GUID: 358c7aaeb1d82db46be0cc5774315d2f
-    m_Address: Assets/data/textures/prototypeStick.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    m_MainAsset: {fileID: 0}
-    m_TargetAsset: {fileID: 0}
-  - m_GUID: df49c7283da426e438131d378ad67c87
-    m_Address: Assets/data/textures/prototypeTree.png
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    m_MainAsset: {fileID: 0}
-    m_TargetAsset: {fileID: 0}
   - m_GUID: efb2096388d442b4dabf807f87b25ca2
     m_Address: Assets/data/textures/prototypeWood.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - item
     m_MainAsset: {fileID: 0}
     m_TargetAsset: {fileID: 0}
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 1c4ea4b78f833aa48a2c8e74268f58fb, type: 2}
   m_SchemaSet:
     m_Schemas:
-    - {fileID: 11400000, guid: dcb344c5eff722245a02b40a4f31ecf6, type: 2}
-    - {fileID: 11400000, guid: f98b22137eab75e4993e3f0aa80c9b2a, type: 2}
+    - {fileID: 11400000, guid: 1244d941518149540893ef0d6e690e8f, type: 2}
+    - {fileID: 11400000, guid: 525c455de4b15cc4ebadc289d93e3a33, type: 2}

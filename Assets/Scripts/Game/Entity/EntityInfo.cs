@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class EntityInfo {
@@ -8,8 +9,12 @@ public class EntityInfo {
     public EntityType _EntityType { get => entityType; set => entityType = value; }
 }
 
+[Flags]
 public enum EntityType
 {
-    BREAKABLE,
-    STATIC
+    BREAKABLE = 1,
+    COLLECTIBLE = 2,
+    INTERACTABLE = 4,
+    HOVERABLE = 8,
+    ATTACKABLE = 16
 }

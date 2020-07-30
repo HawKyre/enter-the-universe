@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4438203992052067239}
   - component: {fileID: 5041393984434724408}
   m_Layer: 0
-  m_Name: Default Item
+  m_Name: itemPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -114,7 +114,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 3783336338553618879}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 358ef902f03f3814bb79330b5947bc75, type: 3}
+  m_Script: {fileID: 11500000, guid: 637f6e502a5de904cb2320e1fad288b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!58 &5041393984434724408

@@ -6,26 +6,28 @@ public class SZoneState
 {
     public Dictionary<SVector2Int, int> tileIDs;
 
-    public List<GameObjectInfo> entityInfo;
+    public List<GameEntityInfo> entityInfo;
     public List<CollectibleInfo> collectibleInfo;
+    public List<PortalInfo> portalInfo;
     public int height;
     public int width;
-    public Vector2Int zoneIndex;
+    public Vector3Int zoneIndex;
 
-    public SZoneState(int h, int w, Vector2Int zoneIndex)
+    public SZoneState(int h, int w, Vector3Int zoneIndex)
     {
         this.height = h;
         this.width = w;
         this.zoneIndex = zoneIndex;
 
-        entityInfo = new List<GameObjectInfo>();
+        entityInfo = new List<GameEntityInfo>();
         collectibleInfo = new List<CollectibleInfo>();
+        portalInfo = new List<PortalInfo>();
 
         tileIDs = new Dictionary<SVector2Int, int>();
     }
 }
 
-public class GameObjectInfo
+public class GameEntityInfo
 {
     public int entityID;
     public SVector3Int pos;

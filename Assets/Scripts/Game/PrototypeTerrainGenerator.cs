@@ -17,20 +17,21 @@ public class PrototypeTerrainGenerator : TerrainGenerator
     private static int FOREST_MIN_RADIUS = 6;
     private static int FOREST_MAX_RADIUS = 15;
 
-    // TODO bad
-    private static Vector3 treeCenterer = new Vector3(0.5f, 0.5f, 0);
     private static bool[][] isCollidable;
+    private static bool[][] entityGrid;
 
-    public static SZoneState GenerateZone(long seed, Vector2Int zoneIndex)
+    public static SZoneState GenerateZone(long seed, Vector3Int zoneIndex)
     {
-        int h = 64;
-        int w = 64;
+        int h = 128;
+        int w = 128;
         SZoneState zs = new SZoneState(h, w, zoneIndex);
         isCollidable = new bool[w][];
+        entityGrid = new bool[w][];
 
         for (int i = 0; i < w; i++)
         {
             isCollidable[i] = new bool[h];
+            entityGrid[i] = new bool[h];
         }
 
         // Generate base map
@@ -41,14 +42,14 @@ public class PrototypeTerrainGenerator : TerrainGenerator
                 if (y < 0 || x < 0 || y >= h || x >= w)
                 {
                     // Bounds tile
-                    // boundsTilemap.SetTile(new Vector3Int(x, y, 0), AssetLoader.GetTileID("bounds_tile").tile);
-                    zs.tileIDs.Add(new SVector2Int(x, y), AssetLoader.GetTileID("bounds_tile"));
+                    // boundsTilemap.SetTile(new Vector3Int(x, y, 0), AssetLoader.GetTileID("boundsTile").tile);
+                    zs.tileIDs.Add(new SVector2Int(x, y), AssetLoader.GetTileID("boundsTile"));
                 }
                 else
                 {
                     // Ground tile
-                    // baseTilemap.SetTile(new Vector3Int(x, y, 0), AssetLoader.GetTileID("ground_tile").tile);
-                    zs.tileIDs.Add(new SVector2Int(x, y), AssetLoader.GetTileID("ground_tile"));
+                    // baseTilemap.SetTile(new Vector3Int(x, y, 0), AssetLoader.GetTileID("groundTile").tile);
+                    zs.tileIDs.Add(new SVector2Int(x, y), AssetLoader.GetTileID("groundTile"));
                 }
             }
         }
@@ -64,7 +65,113 @@ public class PrototypeTerrainGenerator : TerrainGenerator
         // Generate trees
         GenerateTrees(r, zs, h, w);
 
+        // Generate portals
+        GenerateRightPortal(r, zs, h, w);
+        GenerateLeftPortal(r, zs, h, w);
+        GenerateTopPortal(r, zs, h, w);
+        GenerateBottomPortal(r, zs, h, w);
+
+        Debug.Log(zs.tileIDs.Count);
+
         return zs;
+    }
+
+    private static void GenerateRightPortal(System.Random lr, SZoneState zs, int h, int w)
+    {
+        int x = lr.Next(w/2, w/2 + w/4);
+        int y = lr.Next(h/2 - (x - w/2), h/2 + (x - w/2));
+        x += w/4;
+        Vector3Int vPos = new Vector3Int(x, y, 0);
+
+        while (entityGrid[y][x] || CloseToBounds(vPos, zs))
+        {
+            x = lr.Next(w/2, w/2 + w/4);
+            y = lr.Next(h/2 - (x - w/2), h/2 + (x - w/2));
+            x += w/4;
+            vPos = new Vector3Int(x, y, 0);
+        }
+
+        Debug.Log("Added portal entity from right at " + vPos);
+
+        AddPortalEntity(zs, vPos, zs.zoneIndex + Vector3Int.right, Direction.RIGHT);
+    }
+
+    private static void GenerateLeftPortal(System.Random lr, SZoneState zs, int h, int w)
+    {
+        int x = lr.Next(w/2 - w/4, w/2);
+        int y = lr.Next(h/2 - (w/2 - x), h/2 + (w/2 - x));
+        x -= w/4;
+        Vector3Int vPos = new Vector3Int(x, y, 0);
+
+        while (entityGrid[y][x] || CloseToBounds(vPos, zs))
+        {
+            x = lr.Next(w/2 - w/4, w/2);
+            y = lr.Next(h/2 - (w/2 - x), h/2 + (w/2 - x));
+            x -= w/4;
+            vPos = new Vector3Int(x, y, 0);
+        }
+
+        Debug.Log("Added portal entity from left at " + vPos);
+
+        AddPortalEntity(zs, vPos, zs.zoneIndex + Vector3Int.left, Direction.LEFT);
+    }
+
+
+    private static void GenerateTopPortal(System.Random lr, SZoneState zs, int h, int w)
+    {
+        int y = lr.Next(h/2, h/2 + h/4);
+        int x = lr.Next(w/2 - (y - h/2), w/2 + (y - h/2));
+        y += h/4;
+        Vector3Int vPos = new Vector3Int(x, y, 0);
+
+        while (entityGrid[y][x] || CloseToBounds(vPos, zs))
+        {
+            y = lr.Next(h/2, h/2 + h/4);
+            x = lr.Next(w/2 - (y - h/2), w/2 + (y - h/2));
+            y += h/4;
+            vPos = new Vector3Int(x, y, 0);
+        }
+
+        Debug.Log("Added portal entity from top at " + vPos);
+
+        AddPortalEntity(zs, vPos, zs.zoneIndex + Vector3Int.up, Direction.TOP);
+    }
+
+    private static void GenerateBottomPortal(System.Random lr, SZoneState zs, int h, int w)
+    {
+        int y = lr.Next(h/2 - h/4, h/2);
+        int x = lr.Next(w/2 - (h/2 - y), w/2 + (h/2 - y));
+        y -= h/4;
+        Vector3Int vPos = new Vector3Int(x, y, 0);
+
+        while (entityGrid[y][x] || CloseToBounds(vPos, zs))
+        {
+            y = lr.Next(h/2 - h/4, h/2);
+            x = lr.Next(w/2 - (h/2 - y), w/2 + (h/2 - y));
+            y -= h/4;
+            vPos = new Vector3Int(x, y, 0);
+        }
+
+        Debug.Log("Added portal entity from bottom at " + vPos);
+
+        AddPortalEntity(zs, vPos, zs.zoneIndex + Vector3Int.down, Direction.BOTTOM);
+    }
+
+    private static void AddPortalEntity(SZoneState zs, Vector3Int vPos, Vector3Int nextZone, Direction direction)
+    {
+        PortalInfo p = new PortalInfo();
+
+        GameEntityInfo e = new GameEntityInfo();
+        e.entityID = 2;
+        e.entityType = EntityType.INTERACTABLE | EntityType.HOVERABLE;
+        e.pos = vPos;
+
+
+        p.entityInfo = e;
+        p.nextZone = nextZone;
+        p.directionToGo = direction;
+
+        zs.portalInfo.Add(p);
     }
 
     private static void GenerateLake(System.Random lr, SZoneState zs, int h, int w)
@@ -91,7 +198,7 @@ public class PrototypeTerrainGenerator : TerrainGenerator
                 {
                     if (lr.NextDouble() > dist * dist)
                     {
-                        zs.tileIDs[new SVector2Int(x, y)] = AssetLoader.GetTileID("bounds_tile");
+                        zs.tileIDs[new SVector2Int(x, y)] = AssetLoader.GetTileID("boundsTile");
                         isCollidable[x][y] = true;
                     }
                 }
@@ -102,10 +209,8 @@ public class PrototypeTerrainGenerator : TerrainGenerator
 
     private static void GenerateRiver(System.Random lr, SZoneState zs, int h, int w)
     {   
-
         int river_side = lr.Next();
         
-
         // Map the positions to the tilemap
         Vector3Int river_startPos = new Vector3Int();
         Vector3Int river_endPos = new Vector3Int();
@@ -147,7 +252,7 @@ public class PrototypeTerrainGenerator : TerrainGenerator
                 {
                     if (a1 / RIVER_THICKNESS < 0.7f || lr.NextDouble() > a1 / RIVER_THICKNESS)
                     {
-                        zs.tileIDs[new SVector2Int(x, y)] = AssetLoader.GetTileID("bounds_tile");
+                        zs.tileIDs[new SVector2Int(x, y)] = AssetLoader.GetTileID("boundsTile");
                         isCollidable[x][y] = true;
                     }
                 }
@@ -199,21 +304,21 @@ public class PrototypeTerrainGenerator : TerrainGenerator
             var point = bezier.GetPoint(t);
             Vector3Int tilePos = Util.ToVector3Int(point);
 
-            zs.tileIDs[new SVector2Int(tilePos.x, tilePos.y)] = AssetLoader.GetTileID("bounds_tile");
+            zs.tileIDs[new SVector2Int(tilePos.x, tilePos.y)] = AssetLoader.GetTileID("boundsTile");
             isCollidable[tilePos.x][tilePos.y] = true;
 
             // TODO - change
             for (int x = -RIVER_BEZIER_WIDTH / 2; x < (RIVER_BEZIER_WIDTH + 1) / 2; x++)
             {
-                // boundsTilemap.SetTile(tilePos + new Vector3Int(x, 0, 0), AssetLoader.GetTileID("bounds_tile").tile);
+                // boundsTilemap.SetTile(tilePos + new Vector3Int(x, 0, 0), AssetLoader.GetTileID("boundsTile").tile);
                 // baseTilemap.SetTile(tilePos + new Vector3Int(x, 0, 0), null);
 
-                zs.tileIDs[new SVector2Int(tilePos.x + x, tilePos.y)] = AssetLoader.GetTileID("bounds_tile");
+                zs.tileIDs[new SVector2Int(tilePos.x + x, tilePos.y)] = AssetLoader.GetTileID("boundsTile");
                 try
                 {
                     isCollidable[tilePos.x + x][tilePos.y] = true;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     // Welp can't do much
                 }
@@ -229,19 +334,12 @@ public class PrototypeTerrainGenerator : TerrainGenerator
         // Make sure to fix the z index later
 
         int forest_count = lr.Next(2, 5);
-        bool[][] treeGrid = new bool[h][];
-        for (int i = 0; i < w; i++)
-        {
-            treeGrid[i] = new bool[w];
-        }
 
         for (int i = 0; i < forest_count; i++)
         {
             Vector3Int forestCenter = new Vector3Int();
             forestCenter.x = lr.Next(w * 1/6, w * 5/6);
             forestCenter.y = lr.Next(h * 1/6, h * 5/6);
-
-            // int forestRadius = lr.Next(FOREST_MIN_RADIUS, FOREST_MAX_RADIUS);
 
             int forest_xSpan = lr.Next(FOREST_MIN_RADIUS, FOREST_MAX_RADIUS);
             int forest_ySpan = lr.Next(FOREST_MIN_RADIUS, FOREST_MAX_RADIUS);
@@ -257,29 +355,22 @@ public class PrototypeTerrainGenerator : TerrainGenerator
                     var vPos = new Vector3Int(x, y, 0);
 
                     // TODO - check
-                    if (treeGrid[y][x] || CloseToBounds(vPos, zs))
+                    if (entityGrid[x][y] || CloseToBounds(vPos, zs))
                         continue;
 
-                    Vector3 tilePos = vPos + treeCenterer;
-                    float manhattanDistance = Math.Abs(tilePos.x - forestCenter.x) + Math.Abs(tilePos.y - forestCenter.y);
+                    float manhattanDistance = Math.Abs(vPos.x - forestCenter.x) + Math.Abs(vPos.y - forestCenter.y);
                     float relativeMHD = manhattanDistance / maxManhattan;
 
                     if (lr.NextDouble() > relativeMHD * 2)
                     {
-                        treeGrid[y][x] = true;
-                        
-                        // GameObject treeEntity = GameEntity.GenerateGameEntity(1, tilePos);
-                        // treeEntity.AddComponent<BreakableEntity>();
-                        GameObjectInfo e = new GameObjectInfo();
-                        e.entityID = AssetLoader.GetEntityID("prototype_tree");
+                        entityGrid[x][y] = true;
+
+                        GameEntityInfo e = new GameEntityInfo();
+                        e.entityID = AssetLoader.GetEntityID("prototypeTree");
                         e.pos = new SVector3Int(x, y, 0);
                         e.entityType = EntityType.BREAKABLE;
                         
                         zs.entityInfo.Add(e);
-
-                        // treeEntity.EntityObject.transform.position = tilePos;
-
-                        // GameState.GetInstance()._ZoneState.AddEntity(new Vector2Int(x, y), treeEntity);
                     }
                 }
             }
@@ -298,12 +389,19 @@ public class PrototypeTerrainGenerator : TerrainGenerator
     
     private static bool CloseToBounds(Vector3Int pos, SZoneState zs)
     {
-        for (int i = 0; i < 8; i++)
+        try
         {
-            int x = pos.x + Util.SURROUNDING_X[i];
-            int y = pos.y + Util.SURROUNDING_Y[i];
-            if (isCollidable[x][y])
-                return true;
+            for (int i = 0; i < 8; i++)
+            {
+                int x = pos.x + Util.SURROUNDING_X[i];
+                int y = pos.y + Util.SURROUNDING_Y[i];
+                if (isCollidable[x][y])
+                    return true;
+            }
+        }
+        catch (System.IndexOutOfRangeException)
+        {
+            return true;
         }
         return false;
     }

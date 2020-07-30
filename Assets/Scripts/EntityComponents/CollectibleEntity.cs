@@ -8,15 +8,22 @@ public class CollectibleEntity : MonoBehaviour
     private CircleCollider2D collectTrigger;
     private Rigidbody2D rb2d;
     private ItemStack itemStack;
+    private Vector3 entityPosition;
 
     private void Awake()
     {
-        rb2d = this.gameObject.AddComponent<Rigidbody2D>();
+        rb2d = this.gameObject.GetComponent<Rigidbody2D>();
         rb2d.gravityScale = 0;
         rb2d.drag = 2.5f;
-        collectTrigger = this.gameObject.AddComponent<CircleCollider2D>();
+        collectTrigger = this.gameObject.GetComponent<CircleCollider2D>();
         collectTrigger.radius = 2;
         collectTrigger.isTrigger = true;
+        entityPosition = this.transform.position;
+    }
+
+    private void Update()
+    {
+        entityPosition = this.transform.position;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -55,8 +62,13 @@ public class CollectibleEntity : MonoBehaviour
         }
 
         // Add it after you collect it
-        Debug.Log("YTou collecied " + itemStack.Count);
+        Debug.Log("You collected " + itemStack.count);
         GameState.GetInstance()._PlayerState.playerInventory.AddItem(itemStack);
+
+        print(GameState.GetInstance()._PlayerState.playerInventory.Count());
+
+        // Remove it from the zone state
+        GameState.GetInstance()._ZoneState.RemoveItem(this);
 
         GameObject.Destroy(this.gameObject);
     }
@@ -68,11 +80,11 @@ public class CollectibleEntity : MonoBehaviour
 
     public int GetCollectibleID()
     {
-        return itemStack.ID;
+        return itemStack.id;
     }
 
     public CollectibleInfo GetInfo()
     {
-        return new CollectibleInfo(itemStack, this.transform.position);
+        return new CollectibleInfo(itemStack, entityPosition);
     }
 }

@@ -23,6 +23,11 @@ public static class Util
         return new Vector3Int((int) v.x, (int) v.y, 0);
     }
 
+    public static Vector3 ToVector3(Vector3Int v)
+    {
+        return new Vector3(v.x, v.y, v.z);
+    }
+
     public static string SnakeToCamel(string name)
     {
         MatchEvaluator me = new MatchEvaluator((m) => UpperCaseMatch(m));

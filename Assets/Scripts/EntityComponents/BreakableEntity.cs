@@ -4,14 +4,18 @@ using UnityEngine;
 public class BreakableEntity : MonoBehaviour
 {
     private int damageStatus;
-    private GameEntityData bInfo;
-    private int localID;
+    private int ID;
 
-    public int DamageStatus { get => damageStatus; protected set => damageStatus = value; }
+    public int hitPoints;
+    public int minPower;
+    // public List<ToolType> restrictedTools;
+
+    public string dropDataString;
+    private List<ItemDropData> dropData;
 
     private void Awake()
     {
-        localID = this.gameObject.GetComponent<GameEntity>().ID;
+        ID = this.gameObject.GetComponent<GameEntity>().ID;
 
         // Get the sprite's physics shape
         List<Vector2> physicsShapeList = new List<Vector2>();
@@ -21,7 +25,8 @@ public class BreakableEntity : MonoBehaviour
         var pc2d = this.gameObject.AddComponent<PolygonCollider2D>();
         pc2d.points = physicsShapeList.ToArray();
 
-        bInfo = AssetLoader.GetData(localID);
+        damageStatus = hitPoints;
+        dropData = DropData.GetDropData(dropDataString);
     }
     
     public void Break()
@@ -29,7 +34,7 @@ public class BreakableEntity : MonoBehaviour
         GameState.GetInstance()._ParticleSystem.transform.position = new Vector3(this.transform.position.x, this.transform.position.y, 0);
         GameState.GetInstance()._ParticleSystem.Play();
 
-        foreach (var drop in AssetLoader.GetData(localID).dropData.dropDataList)
+        foreach (var drop in dropData)
         {
             int dropCount = drop.GetDropCount();
             for (int i = 0; i < dropCount; i++)
@@ -37,12 +42,11 @@ public class BreakableEntity : MonoBehaviour
                 Vector2 dropDirection = Random.insideUnitCircle.normalized * 3;
                 print("Trees drop " + drop.id);
                 // get the item info associated with each drop
-                GameObject collectible = GameEntity.GenerateGameEntity(drop.id, this.transform.position);
-                var ce = collectible.AddComponent<CollectibleEntity>();
-
-                print("This should be 2 or 3: " + drop.id);
-                ce.SetCollectible(new ItemStack(drop.id, 1));
+                GameObject collectible = GameEntity.GenerateGameItem(drop.id, this.transform.position, new ItemStack(drop.id, 1));
+                var ce = collectible.GetComponent<CollectibleEntity>();
                 ce.Move(dropDirection);
+
+                GameState.GetInstance()._ZoneState.AddItem(ce);
             }
         }
 
@@ -51,7 +55,7 @@ public class BreakableEntity : MonoBehaviour
 
     public void Damage(int damagePoints, int power)
     {
-        if (power >= bInfo.minPower)
+        if (power >= minPower)
         {
             damageStatus -= damagePoints;
             if (damageStatus <= 0)

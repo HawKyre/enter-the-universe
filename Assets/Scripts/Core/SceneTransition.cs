@@ -21,5 +21,4 @@ public class SceneTransition : MonoBehaviour
         yield return new WaitForSeconds(animationLength == 0 ? 1 : animationLength);
         SceneManager.LoadScene(scene);
     }
-
 }

@@ -33,15 +33,15 @@ public class UIInventoryManager : MonoBehaviour
         int column = 0;
 
         // Sort inventory by ID before showing it?
-        GameState.GetInstance()._PlayerState.playerInventory.SortInventory((x, y) => x.ID - y.ID);
+        GameState.GetInstance()._PlayerState.playerInventory.SortInventory((x, y) => x.id - y.id);
 
         foreach (ItemStack item in GameState.GetInstance()._PlayerState.playerInventory.GetItems())
         {
-            print($"Found item {item.ID} x{item.Count} in inventory");
+            print($"Found item {item.id} x{item.count} in inventory");
             GameObject itemInstance = GameObject.Instantiate(itemPrefab);
             itemInstance.transform.SetParent(this.transform);
 
-            spawnedInventoryItems.Add(new UIItem(item.ID, item.Count, itemInstance));
+            spawnedInventoryItems.Add(new UIItem(item.id, item.count, itemInstance));
 
             var rect = itemInstance.GetComponent<RectTransform>();
             Vector3 itemPos = new Vector3(row * (UI_ITEM_SIZE + GAP), column * (UI_ITEM_SIZE + GAP), 0);
@@ -49,10 +49,10 @@ public class UIInventoryManager : MonoBehaviour
             rect.localScale = Vector3.one;
 
             Image itemImage = itemInstance.transform.GetChild(0).GetComponent<Image>();
-            itemImage.sprite = AssetLoader.GetData(item.ID).sprite;
+            itemImage.sprite = AssetLoader.GetItemData(item.id).sprite;
 
             TextMeshProUGUI itemText = itemInstance.transform.GetChild(1).GetComponentInChildren<TextMeshProUGUI>();
-            itemText.text = "x" + item.Count;
+            itemText.text = "x" + item.count;
 
 
             row++;

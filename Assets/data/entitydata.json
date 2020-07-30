@@ -1,3 +1,7 @@
+{
+  "entity1": "prototype_tree"
+}
+
 [
   {
     "id": 1,
@@ -11,11 +15,11 @@
   {
     "id": 2,
     "name": "prototype_stick",
-    "type": "ITEM"
+    "type": "COLLECTIBLE"
   },
   {
     "id": 3,
     "name": "prototype_wood",
-    "type": "ITEM"
+    "type": "COLLECTIBLE"
   }
 ]
