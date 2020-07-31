@@ -45,6 +45,8 @@ public class ZoneState
         MapItems = new List<CollectibleEntity>();
         TileIDs = zs.tileIDs;
 
+        PortalInfo = zs.portalInfo;
+
         serializedZoneState = zs;
 
         LoadToScene(zs);
@@ -81,7 +83,7 @@ public class ZoneState
     public void RemoveItem(CollectibleEntity i)
     {
         MapItems.Remove(i);
-    } 
+    }
 
     public void ChangeTile(int newTileID, Vector2Int newTilePos)
     {
@@ -114,15 +116,18 @@ public class ZoneState
         // Setting the entities TODO ples
         foreach (var e in zs.entityInfo)
         {
-            GameObject eG = GameEntity.GenerateGameEntity(e.entityID, new Vector3(e.pos.x, e.pos.y, e.pos.z));
-            this.AddEntity(eG.transform.GetChild(0).gameObject, new Vector2Int(e.pos.x, e.pos.y), e.entityType, e.entityID);
+            GameObject entity = GameEntity.GenerateGameEntity(e.entityID, new Vector3(e.pos.x, e.pos.y, e.pos.z));
+            entity.transform.SetParent(SceneReferences.entityParent);
+            this.AddEntity(entity.transform.GetChild(0).gameObject, new Vector2Int(e.pos.x, e.pos.y), e.entityType, e.entityID);
         }
 
         // Adding the portals
         foreach (var p in zs.portalInfo)
         {
-            GameObject eG = GameEntity.GenerateGameEntity(p.entityInfo.entityID, new Vector3(p.entityInfo.pos.x, p.entityInfo.pos.y, p.entityInfo.pos.z));
-            var portalComponent = eG.transform.GetChild(0).GetComponent<PortalEntity>();
+            GameObject portalEntity = GameEntity.GenerateGameEntity(p.entityInfo.entityID, new Vector3(p.entityInfo.pos.x, p.entityInfo.pos.y, p.entityInfo.pos.z));
+            portalEntity.transform.SetParent(SceneReferences.entityParent);
+            
+            var portalComponent = portalEntity.transform.GetChild(0).GetComponent<PortalEntity>();
 
             portalComponent.NextZone = p.nextZone;
             portalComponent.PortalDirection = p.directionToGo;
@@ -132,10 +137,24 @@ public class ZoneState
         foreach (var c in zs.collectibleInfo)
         {
             GameObject collectible = GameEntity.GenerateGameItem(c.itemStack.id, c.pos, c.itemStack);
+            collectible.transform.SetParent(SceneReferences.itemParent);
 
             this.AddItem(collectible.GetComponent<CollectibleEntity>());
         }
 
+    }
+
+    public void DestroyZone()
+    {
+        foreach (var e in MapItems)
+        {
+            if (e != null) GameObject.Destroy(e.gameObject);
+        }
+
+        foreach (var e in MapEntities)
+        {
+            if (e.gameObject != null) GameObject.Destroy(e.gameObject.transform.parent.gameObject);
+        }
     }
 
     public SZoneState Serialize()
@@ -144,7 +163,6 @@ public class ZoneState
         sz.collectibleInfo = mapItems.Select(x => x.GetInfo()).ToList();
         sz.tileIDs = this.tileIDs;
 
-        // TODO - Add portal info parsing
         sz.portalInfo = portalInfo;
 
         foreach (var e in MapEntities)

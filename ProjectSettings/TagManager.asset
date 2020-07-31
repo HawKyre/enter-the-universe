@@ -6,7 +6,9 @@ TagManager:
   tags:
   - boundsTilemap
   - baseTilemap
-  - CameraConfiner
+  - entityParent
+  - itemParent
+  - cameraConfiner
   layers:
   - Default
   - TransparentFX

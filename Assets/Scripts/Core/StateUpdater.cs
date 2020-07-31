@@ -24,6 +24,8 @@ public class StateUpdater
         // Write the current zone's file
         writingOps.Add(WriteZoneData());
 
+        Debug.Log("State is being saved...");
+
         await Task.WhenAll(writingOps);
 
         Debug.Log("State saved!");
@@ -31,7 +33,7 @@ public class StateUpdater
 
     private static async Task WriteZoneData()
     {
-        string zoneDataPath = GameState.GetInstance().GetZonePath();
+        string zoneDataPath = ZoneLoader.zoneDataPath;
         UTF8Encoding uEnc = new UTF8Encoding();
 
         byte[] result = await Task<byte[]>.Run(() => {
@@ -49,7 +51,6 @@ public class StateUpdater
         await Task.Run(() => File.Move(zoneDataPath, zoneDataPath + ".old"));
         await Task.Run(() => File.Move(zoneDataPath + ".bak", zoneDataPath));
         await Task.Run(() => File.Delete(zoneDataPath + ".old"));
-        
     }
 
     private static async Task WritePlayerData()

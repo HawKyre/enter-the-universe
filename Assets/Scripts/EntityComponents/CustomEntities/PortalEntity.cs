@@ -37,6 +37,6 @@ class PortalEntity : InteractableEntity
     {
         ZoneLoader.GoToZone(nextZone, portalDirection);
 
-        Debug.Log("Going to zone " + GameState.GetInstance()._PlayerState.currentZone);
+        // Debug.Log("Going to zone " + GameState.GetInstance()._PlayerState.currentZone);
     }
 }

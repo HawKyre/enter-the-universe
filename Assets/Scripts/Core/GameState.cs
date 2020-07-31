@@ -42,9 +42,7 @@ public class GameState : MonoBehaviour
 
     private void Awake()
     {
-        // We do this so that we keep the state across reloads I guess
-        // TODO - move to wherever it is that we transition from zone to zone instead of here, since it might give problems when going to the menu from game and we want to keep it only when we switch scene to the same one to get to the next zone
-        // DontDestroyOnLoad(this.gameObject);
+        BindReferences();
 
         // This should be moved somewhere else please for the love of gos it makes no sense to have this here when it should be in the main scene
         // maybe with the if it's not needed but still think about it
@@ -56,6 +54,8 @@ public class GameState : MonoBehaviour
         Instance = this.gameObject.GetComponent<GameState>();
 
         _ParticleSystem = GameObject.Find("Particle System").GetComponent<ParticleSystem>();
+
+        ZoneLoader.LoadFirstZone();
     }
 
     private void LoadUniverseData()
@@ -65,48 +65,18 @@ public class GameState : MonoBehaviour
         this.universeData = JsonConvert.DeserializeObject<UniverseData>(univDat);
     }
 
-    public string GetZonePath()
-    {
-        return zoneDataPath;
-    }
-
-    // TODO - FUCKING GARBAGE
-    private void OnEnable()
-    {
-        SceneManager.sceneLoaded += OnZoneLoaded;
-    }
-
-    private void OnZoneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        BindReferences();
-        
-        // if (playerState == null)
-        // {
-        //     // read the player state
-        //     string playerDataPath = PlayerPrefs.GetString("univPath") + "/player.dat";
-        //     string playerDat = File.ReadAllText(playerDataPath);
-        //     this.playerState = JsonConvert.DeserializeObject<PlayerState>(playerDat);
-        // }
-
-        
-
-        
-
-        // Setup the camera confiner
-        Vector3 bottomLeftCorner = Vector3.zero;
-        var points = new Vector2[4];
-        points[0] = new Vector2(bottomLeftCorner.x - 1, bottomLeftCorner.y - 1);
-        points[1] = new Vector2(bottomLeftCorner.x + _ZoneState.Width + 1, bottomLeftCorner.y - 1);
-        points[2] = new Vector2(bottomLeftCorner.x + _ZoneState.Width + 1, bottomLeftCorner.y + _ZoneState.Height + 1);
-        points[3] = new Vector2(bottomLeftCorner.x - 1, bottomLeftCorner.y + _ZoneState.Height + 1);
-        cameraConfiner.points = points;
-        cameraConfiner.SetPath(0, new List<Vector2>(points));
-    }
-
     private void BindReferences()
     {
         playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
-        cameraConfiner = GameObject.FindGameObjectWithTag("CameraConfiner").GetComponent<PolygonCollider2D>();
+
+        if (playerState == null)
+        {
+            // read the player state
+            string playerDataPath = PlayerPrefs.GetString("univPath") + "/player.dat";
+            string playerDat = File.ReadAllText(playerDataPath);
+            this.playerState = JsonConvert.DeserializeObject<PlayerState>(playerDat);
+        }
+
         Debug.Log("References binded: " + playerTransform + " / " + cameraConfiner);
     }
 
@@ -118,7 +88,6 @@ public class GameState : MonoBehaviour
 
     private void UpdatePlayerState()
     {
-        Debug.Log(_PlayerState + " - " + playerTransform);
         _PlayerState.position = playerTransform.position;
     }
 

@@ -4,44 +4,54 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Text;
 using System.Linq;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public static class ZoneLoader
 {
+    public static string zoneDataPath;
+
     public static async void GoToZone(Vector3Int nextZone, Direction dir)
     {
+        List<Task> resetOps = new List<Task>();
+
         // Fadeout screen
 
+
         // Save the state
-        await StateUpdater.UpdateFiles();
+        resetOps.Add(ResetScene());
+        resetOps.Add(StateUpdater.UpdateFiles());
 
         // Delete all the stuff from the screen
         // TODO - Add all entities under a children or something and just recursively kill all entities
         // Also just do a quick clear tiles in the tilemaps
+        // resetOps.Add(ResetScene());
+
+        await Task.WhenAll(resetOps);
+
+        Debug.Log("Done unloading previous zone.");
 
         // Set the new zone to go
         var newZoneDelta = GameState.GetInstance()._PlayerState.currentZone - nextZone;
         GameState.GetInstance()._PlayerState.currentZone = nextZone;
 
-        // Load / create the next zone
-        bool isFirstTime;
-        ZoneState newZone = GetZone(nextZone, out isFirstTime);
-        
-        // Set the zone
+        // Load the next zone
+        ZoneState newZone = GetZone(nextZone);
 
-        // Set the player's position
-        if (isFirstTime)
-        {
-            MovePlayerToSpawnPos();
-        }
-        else
-        {
-            MovePlayer(Util.ToVector3(newZone.PortalInfo.Find(x => x.directionToGo == dir).entityInfo.pos));
-        }
+        GameState.GetInstance()._ZoneState = newZone;
+
+        Direction mirroredDir = (Direction) (((int) dir + 2) % 4);
+        MovePlayer(Util.ToVector3(newZone.PortalInfo.Find(x => x.directionToGo == mirroredDir).entityInfo.pos));
+
+        Debug.Log("Loaded next zone");
 
         // Load the zone to screen / this is done inside the ZoneState constructor
+
+        // GG!
+        Debug.Log("Current zone: " + nextZone);
     }
 
-    private static void MovePlayerToSpawnPos()
+    private static void GenerateSpawnPos()
     {
         System.Random _r = new System.Random((int) DateTimeOffset.Now.ToUnixTimeMilliseconds());
         ZoneState zoneState = GameState.GetInstance()._ZoneState;
@@ -80,7 +90,7 @@ public static class ZoneLoader
         GameState.GetInstance()._PlayerState.position = pos;
     }
 
-    private static ZoneState GetZone(Vector3Int zone, out bool isFirstTime)
+    private static ZoneState GetZone(Vector3Int zone)
     {
         PlayerState playerState = GameState.GetInstance()._PlayerState;
         UniverseData universeData = GameState.GetInstance()._UniverseData;
@@ -89,10 +99,9 @@ public static class ZoneLoader
 
         // If there's no file with the current zone, create it and store it
         // If there is, read it and load it
-        string zoneDataPath = $"{zoneFolder}/{playerState.currentZone.x}.{playerState.currentZone.y}.zone";
+        zoneDataPath = $"{zoneFolder}/{playerState.currentZone.x}.{playerState.currentZone.y}.zone";
 
         SZoneState newZoneState;
-        isFirstTime = false;
 
         Debug.Log("Zone: " + zoneDataPath);
         if (!File.Exists(zoneDataPath))
@@ -104,13 +113,13 @@ public static class ZoneLoader
             // Create one and write it
             newZoneState = TerrainGenerator.GenerateNewZone_v0(universeData.seed1, playerState.currentZone);
             string zoneDat = JsonConvert.SerializeObject(newZoneState);
+
+            Debug.Log("New portals: " + newZoneState.portalInfo);
             
             FileStream fs = File.Create(zoneDataPath);
             fs.Close();
 
             File.WriteAllText(zoneDataPath, zoneDat, Encoding.UTF8);
-
-            if (playerState.currentZone == Vector3Int.zero) isFirstTime = true;
         }
         else
         {
@@ -123,16 +132,50 @@ public static class ZoneLoader
         return new ZoneState(newZoneState);
     }
 
-    public static void LoadZone()
+    public static void LoadFirstZone()
     {
-
+        GameState.GetInstance()._ZoneState = GetZone(Vector3Int.zero);
+        SetupCameraConfiner(GameState.GetInstance()._ZoneState.Height, GameState.GetInstance()._ZoneState.Width);
+        GenerateSpawnPos();
     }
 
-    public static void ResetScene()
-    {
+    public static async Task ResetScene()
+    {        
+        Debug.Log("Deleting tiles!");
+
         // Delete the tilemaps
-        // Delete the entities
+        SceneReferences.boundsTilemap.ClearAllTiles();
+        SceneReferences.baseTilemap.ClearAllTiles();
+
+        Debug.Log("Deleted tiles.");
+
+        // Delete the entities - I think I can't do this in a task
+        for (int i = 0; i < SceneReferences.entityParent.childCount; i++)
+        {
+            GameObject.Destroy(SceneReferences.entityParent.GetChild(i).gameObject);
+        }
+
+        Debug.Log("Deleted entities");
+
         // Delete the items
+        for (int i = 0; i < SceneReferences.entityParent.childCount; i++)
+        {
+            GameObject.Destroy(SceneReferences.entityParent.GetChild(i).gameObject);
+        }
         // Delete EVERYTHING HAHAHAHHAHA
+
+        Debug.Log("Scene reset!");
+    }
+
+    private static void SetupCameraConfiner(int h, int w)
+    {
+        Vector3 bottomLeftCorner = Vector3.zero;
+        var points = new Vector2[4];
+        points[0] = new Vector2(bottomLeftCorner.x - 1, bottomLeftCorner.y - 1);
+        points[1] = new Vector2(bottomLeftCorner.x + w + 1, bottomLeftCorner.y - 1);
+        points[2] = new Vector2(bottomLeftCorner.x + w + 1, bottomLeftCorner.y + h + 1);
+        points[3] = new Vector2(bottomLeftCorner.x - 1, bottomLeftCorner.y + h + 1);
+        SceneReferences.cameraConfiner.points = points;
+        SceneReferences.cameraConfiner.SetPath(0, new List<Vector2>(points));
     }
 }

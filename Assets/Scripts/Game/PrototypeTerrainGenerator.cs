@@ -91,7 +91,7 @@ public class PrototypeTerrainGenerator : TerrainGenerator
             vPos = new Vector3Int(x, y, 0);
         }
 
-        Debug.Log("Added portal entity from right at " + vPos);
+        // Debug.Log("Added portal entity from right at " + vPos);
 
         AddPortalEntity(zs, vPos, zs.zoneIndex + Vector3Int.right, Direction.RIGHT);
     }
@@ -111,7 +111,7 @@ public class PrototypeTerrainGenerator : TerrainGenerator
             vPos = new Vector3Int(x, y, 0);
         }
 
-        Debug.Log("Added portal entity from left at " + vPos);
+        // Debug.Log("Added portal entity from left at " + vPos);
 
         AddPortalEntity(zs, vPos, zs.zoneIndex + Vector3Int.left, Direction.LEFT);
     }
@@ -132,7 +132,7 @@ public class PrototypeTerrainGenerator : TerrainGenerator
             vPos = new Vector3Int(x, y, 0);
         }
 
-        Debug.Log("Added portal entity from top at " + vPos);
+        // Debug.Log("Added portal entity from top at " + vPos);
 
         AddPortalEntity(zs, vPos, zs.zoneIndex + Vector3Int.up, Direction.TOP);
     }
@@ -152,7 +152,7 @@ public class PrototypeTerrainGenerator : TerrainGenerator
             vPos = new Vector3Int(x, y, 0);
         }
 
-        Debug.Log("Added portal entity from bottom at " + vPos);
+        // Debug.Log("Added portal entity from bottom at " + vPos);
 
         AddPortalEntity(zs, vPos, zs.zoneIndex + Vector3Int.down, Direction.BOTTOM);
     }

@@ -26,7 +26,6 @@ public class MainMenuManager : MonoBehaviour
     private void Awake()
     {
         pUnivDataPath = Application.persistentDataPath + "/universes";
-        print(pUnivDataPath);
 
         if (!Directory.Exists(pUnivDataPath))
         {

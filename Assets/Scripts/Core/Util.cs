@@ -34,11 +34,6 @@ public static class Util
         return Regex.Replace(name, @"_([a-z])", me);
     }
 
-    private static string UpperCaseMatch(Match m)
-    {
-        return (char) (m.Value[1] - 32) + "";
-    }
-
     public static int ZZtoZ(Vector2Int pos)
     {
         int x = pos.x;
@@ -64,6 +59,17 @@ public static class Util
             return d1(n) + n - x;
         }
         return d2(n) + n - y;
+    }
+
+
+    public static long RotateLeft(long z_value, int z_shift)
+    {
+        return ((z_value << z_shift) | (z_value >> (64 - z_shift))) & 0xFFFFFFFF;
+    }
+
+    private static string UpperCaseMatch(Match m)
+    {
+        return (char) (m.Value[1] - 32) + "";
     }
 
     private static int d1(int n)

@@ -63,10 +63,6 @@ public static class AssetLoader
         foreach (var item in itemInfoDict)
         {
             item.Value.sprite = await Addressables.LoadAssetAsync<Sprite>($"{addrItemPath}/{item.Value.name}.png").Task;
-            if (item.Value.sprite != null)
-            {
-                Debug.Log("I could load " + item.Value.name);
-            }
         }
     }
 
